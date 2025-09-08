@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global resets and font */
+body {
+  @apply bg-neutral-light text-neutral-dark font-sans;
+}
