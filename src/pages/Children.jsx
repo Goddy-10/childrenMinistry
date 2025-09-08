@@ -312,7 +312,7 @@ export default function Children() {
     <div className="p-6 min-h-screen bg-gray-100 space-y-6">
       {/* Page Title + Actions */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <h1 className="text-2xl font-bold text-purple-700">Children</h1>
+        <h1 className="text-2xl font-bold text-pink-600">Children</h1>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Class Filter */}
@@ -335,7 +335,7 @@ export default function Children() {
             className="border-purple-300 text-purple-700"
             onClick={handleDownloadCSV}
           >
-            <Download className="w-4 h-4 mr-2" />
+            <Download className="w-4 h-4 mr-2 bg-pink-600 hover:bg-purple-700 text-white" />
             Download CSV
           </Button>
           <Button
@@ -343,14 +343,14 @@ export default function Children() {
             className="border-purple-300 text-purple-700"
             onClick={handlePrint}
           >
-            <Printer className="w-4 h-4 mr-2" />
+            <Printer className="w-4 h-4 mr-2 bg-pink-600 hover:bg-purple-700 text-white" />
             Print
           </Button>
 
           {/* Add Child (Dialog) */}
           <Dialog open={openAdd} onOpenChange={setOpenAdd}>
             <DialogTrigger asChild>
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+              <Button className="bg-pink-600 hover:bg-purple-700 text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Child
               </Button>
@@ -497,7 +497,7 @@ export default function Children() {
       <div className="flex justify-center items-center gap-3 pt-2">
         <Button
           variant="outline"
-          className="border-purple-300"
+          className="border-purple-300 bg-pink-600 hover:bg-purple-700 text-white"
           disabled={page <= 1}
           onClick={() => setPage((p) => p - 1)}
         >
@@ -508,7 +508,7 @@ export default function Children() {
         </span>
         <Button
           variant="outline"
-          className="border-purple-300"
+          className="border-purple-300 bg-pink-600 hover:bg-purple-700 text-white"
           disabled={page >= totalPages}
           onClick={() => setPage((p) => p + 1)}
         >

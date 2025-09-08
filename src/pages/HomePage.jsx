@@ -102,7 +102,7 @@ export default function HomePage() {
       {/* Floating Card */}
       <div className="bg-white w-full max-w-4xl min-h-[50vh] rounded-2xl shadow-2xl overflow-hidden">
         {/* Title strip */}
-        <div className="bg-purple-400 text-white text-center px-6 py-4 md:py-6">
+        <div className="bg-pink-600 text-white text-center px-6 py-4 md:py-6">
           <h2 className="text-xl md:text-2xl font-bold">Welcome to GCC Karama Children Ministry</h2>
         </div>
 
