@@ -100,10 +100,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-500 flex[calc(100vh-4rem)] pt-4 px-4 md:px-6 flex items-center justify-center">
       {/* Floating Card */}
-      <div className="bg-white w-full max-w-4xl min-h-[50vh] rounded-2xl shadow-2xl overflow-hidden">
+      <div className="bg-white w-full max-w-7xl min-h-[75vh] rounded-2xl shadow-2xl overflow-hidden">
         {/* Title strip */}
         <div className="bg-pink-600 text-white text-center px-6 py-4 md:py-6">
-          <h2 className="text-xl md:text-2xl font-bold">Welcome to GCC Karama Children Ministry</h2>
+          <h2 className="text-xl md:text-2xl font-bold">Welcome to Grace Celebration Chapel-Karama </h2>
         </div>
 
         {/* Body: picture placeholder */}
