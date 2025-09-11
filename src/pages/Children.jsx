@@ -332,7 +332,7 @@ export default function Children() {
           {/* Export & Print */}
           <Button
             variant="outline"
-            className="border-purple-300 text-purple-700"
+            className="border-pink-600 text-pink-600"
             onClick={handleDownloadCSV}
           >
             <Download className="w-4 h-4 mr-2 bg-pink-600 hover:bg-purple-700 text-white" />
@@ -340,7 +340,7 @@ export default function Children() {
           </Button>
           <Button
             variant="outline"
-            className="border-purple-300 text-purple-700"
+            className="border-pink-600 text-pink-600"
             onClick={handlePrint}
           >
             <Printer className="w-4 h-4 mr-2 bg-pink-600 hover:bg-purple-700 text-white" />

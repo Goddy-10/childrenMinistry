@@ -18,10 +18,10 @@ export default function Teachers() {
   return (
     <div className="p-6 bg-gray-300 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-700">Teachers</h1>
+        <h1 className="text-2xl font-bold text-pink-600">Teachers</h1>
         <button
           onClick={() => setIsDialogOpen(true)}
-          className="px-4 py-2 bg-gray-500 text-white rounded-lg"
+          className="px-4 py-2 bg-pink-600 text-white rounded-lg"
         >
           Add Teacher
         </button>

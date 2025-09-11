@@ -133,7 +133,7 @@ export default function Timetable() {
           <title>Timetable</title>
           <style>
             body { font-family: sans-serif; padding: 16px; }
-            h1 { color: #7e22ce; }
+            h1 { color: #a622ceff; }
             table { width: 100%; border-collapse: collapse; margin-top: 12px; }
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
             th { background: #f3f4f6; }
@@ -172,7 +172,7 @@ export default function Timetable() {
   return (
     <div className="p-6 min-h-screen bg-gray-100 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <h1 className="text-2xl font-bold text-purple-700">Timetable</h1>
+        <h1 className="text-2xl font-bold text-pink-600">Timetable</h1>
         <div className="flex flex-wrap gap-2">
           <Input
             placeholder="Search by teacher or date..."
@@ -182,20 +182,20 @@ export default function Timetable() {
           />
           <Button
             variant="outline"
-            className="border-purple-300 text-purple-700"
+            className="border-pink-600 text-pink-600"
             onClick={handleDownloadCSV}
           >
             <Download className="w-4 h-4 mr-2" /> Download
           </Button>
           <Button
             variant="outline"
-            className="border-purple-300 text-purple-700"
+            className="border-pink-600 text-pink-600"
             onClick={handlePrint}
           >
             <Printer className="w-4 h-4 mr-2" /> Print
           </Button>
           <Button
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-pink-600 hover:bg-purple-700 text-white"
             onClick={openAdd}
           >
             <Plus className="w-4 h-4 mr-2" /> Add Entry

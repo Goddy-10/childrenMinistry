@@ -40,7 +40,7 @@ export default function Reports() {
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
-      <h1 className="text-2xl font-bold text-purple-700 mb-4">Reports</h1>
+      <h1 className="text-2xl font-bold text-pink-600 mb-4">Reports</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         {/* Tabs */}
@@ -50,7 +50,7 @@ export default function Reports() {
               key={tab.id}
               value={tab.id}
               className="px-4 py-2 rounded-t-lg text-sm font-medium text-gray-700 hover:bg-gray-200 data-[state=active]:bg-white
-            data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600"
+            data-[state=active]:border-b-2 data-[state=active]:border-pink-600 data-[state=active]:text-pink-600"
             >
               {tab.label}
             </TabsTrigger>
@@ -67,7 +67,7 @@ export default function Reports() {
                   <CardTitle>Today’s Attendance</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold text-purple-700">--</p>
+                  <p className="text-2xl font-bold text-pink-600">--</p>
                 </CardContent>
               </Card>
               <Card>
@@ -75,7 +75,7 @@ export default function Reports() {
                   <CardTitle>Today’s Offering</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold text-purple-700">--</p>
+                  <p className="text-2xl font-bold text-pink-600">--</p>
                 </CardContent>
               </Card>
               <Card>
@@ -83,7 +83,7 @@ export default function Reports() {
                   <CardTitle>This Month Attendance</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold text-purple-700">--</p>
+                  <p className="text-2xl font-bold text-pink-600">--</p>
                 </CardContent>
               </Card>
               <Card>
@@ -91,7 +91,7 @@ export default function Reports() {
                   <CardTitle>This Month Offering</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold text-purple-700">--</p>
+                  <p className="text-2xl font-bold text-pink-600">--</p>
                 </CardContent>
               </Card>
             </div>
@@ -99,7 +99,7 @@ export default function Reports() {
             {/* Table + Add button */}
             <div className="bg-white shadow rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold text-purple-700">
+                <h2 className="text-lg font-semibold text-pink-600">
                   Weekly Reports
                 </h2>
 
@@ -155,7 +155,7 @@ export default function Reports() {
                       />
                       <Button
                         type="submit"
-                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                        className="bg-pink-600 hover:bg-purple-700 text-white"
                       >
                         Save Report
                       </Button>
@@ -181,7 +181,7 @@ export default function Reports() {
                     <tr>
                       <td
                         colSpan={5}
-                        className="text-center text-gray-500 py-4"
+                        className="text-center text-pink-600 py-4"
                       >
                         No reports yet.
                       </td>

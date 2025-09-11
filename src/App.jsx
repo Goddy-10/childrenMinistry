@@ -8,6 +8,7 @@ import Children from "./pages/Children";
 import { Toaster } from "./components/ui/toaster";
 import Reports from "./pages/Reports";
 import Timetable from "./pages/Timetable";
+import Adults from "./pages/Adults";
 export default function App() {
   return (
     <>
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/reports" element={<Reports />} />
           <Route path="/timetable" element={<Timetable />} />
           <Route path="/timetable" element={<Timetable />} />
+          <Route path="/adults" element={<Adults/>} />
         </Routes>
       </div>
       <Toaster />

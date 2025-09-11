@@ -87,18 +87,18 @@ export default function Header() {
 
   const menuItems = [
     { name: "Home", path: "/" },
-    { name: "Timetable", path: "/timetable" },
+    { name: "Main Church", path: "/adults" },
+    { name: " CM Timetable", path: "/timetable" },
     { name: "Reports", path: "/reports" },
-    { name: "Members", path: "/members" },
+    { name: "Teachers", path: "/members" },
     { name: "Classes", path: "/classes" },
     { name: "Children", path: "/children" },
-    
   ];
 
   return (
     <header className="fixed top-0 left-0 w-full bg-gray-500 text-white shadow-md z-50">
       <div className="max-w-6xl mx-auto flex justify-between items-center px-4 py-3">
-        <h1 className="text-xl font-bold text-pink-900">GCC Karama Children Ministry Online Platform</h1>
+        <h1 className="text-xl font-bold text-pink-900"> Welcome to GCC Karama Church </h1>
 
         {/* Desktop Menu */}
         <nav className="hidden md:flex gap-6">
