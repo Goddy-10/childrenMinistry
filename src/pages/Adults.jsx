@@ -1,332 +1,8 @@
-// // src/pages/Adults.jsx
-// import { useState } from "react";
-// import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-// import { Card, CardHeader, CardContent } from "@/components/ui/card";
-// import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button";
-// import { Calendar } from "@/components/ui/calendar"; // if installed, else we’ll adjust
-// // import { toast } from "@/components/ui/use-toast";
-
-
-
-// const Adults = () => {
-//   const [activeTab, setActiveTab] = useState("membership");
-
-//   // Handle Download
-//   const handleDownload = async (section) => {
-//     try {
-//       const response = await fetch(
-//         `http://localhost:5000/adults/${section}/export`,
-//         {
-//           method: "GET",
-//         }
-//       );
-
-//       if (!response.ok) throw new Error("Download failed");
-
-//       const blob = await response.blob();
-//       const url = window.URL.createObjectURL(blob);
-//       const a = document.createElement("a");
-//       a.href = url;
-//       a.download = `${section}_data.xlsx`;
-//       a.click();
-//       window.URL.revokeObjectURL(url);
-//     } catch (error) {
-//       console.error("Download error:", error);
-//     }
-//   };
-
-//   // Handle Print
-//   const handlePrint = () => {
-//     window.print();
-//   };
-
-//   // Toolbar with Download & Print
-//   const Toolbar = ({ section }) => (
-//     <div className="flex justify-end space-x-2 mb-4">
-//       <button
-//         onClick={() => handleDownload(section)}
-//         className="px-3 py-1 bg-pink-600 text-white rounded-md"
-//       >
-//         Download
-//       </button>
-//       <button
-//         onClick={handlePrint}
-//         className="px-3 py-1 bg-gray-600 text-white rounded-md"
-//       >
-//         Print
-//       </button>
-//     </div>
-//   );
-
-//   return (
-//     <div className="p-6">
-//       <h1 className="text-2xl font-bold text-pink-600 mb-6">Adults Page</h1>
-
-//       {/* Tabs */}
-//       <div className="flex space-x-4 border-b mb-6 overflow-x-auto">
-//         {[
-//           "membership",
-//           "new-believers",
-//           "finance",
-//           "development",
-//           "missions",
-//           "gcc-schools",
-//           "departments",
-//         ].map((tab) => (
-//           <button
-//             key={tab}
-//             className={`px-4 py-2 whitespace-nowrap ${
-//               activeTab === tab
-//                 ? "border-b-2 border-pink-600 font-semibold text-pink-600"
-//                 : "text-gray-600"
-//             }`}
-//             onClick={() => setActiveTab(tab)}
-//           >
-//             {tab.replace("-", " ").toUpperCase()}
-//           </button>
-//         ))}
-//       </div>
-
-//       {/* Content per Tab */}
-//       <div>
-//         {/* Membership */}
-//         {activeTab === "membership" && (
-//           <div>
-//             <Toolbar section="membership" />
-//             <form className="space-y-4">
-//               <input
-//                 type="text"
-//                 placeholder="Full Name"
-//                 className="w-full border p-2 rounded"
-//               />
-//               <input
-//                 type="text"
-//                 placeholder="Phone Number"
-//                 className="w-full border p-2 rounded"
-//               />
-//               <input
-//                 type="text"
-//                 placeholder="Residence"
-//                 className="w-full border p-2 rounded"
-//               />
-//               <button
-//                 type="submit"
-//                 className="px-4 py-2 bg-pink-600 text-white rounded-md"
-//               >
-//                 Save Member
-//               </button>
-//             </form>
-//           </div>
-//         )}
-
-//         {/* New Believers */}
-//         {activeTab === "new-believers" && (
-//           <div>
-//             <Toolbar section="new-believers" />
-//             <form className="space-y-4">
-//               <input
-//                 type="text"
-//                 placeholder="Full Name"
-//                 className="w-full border p-2 rounded"
-//               />
-//               <input
-//                 type="text"
-//                 placeholder="Phone Number"
-//                 className="w-full border p-2 rounded"
-//               />
-//               <input
-//                 type="text"
-//                 placeholder="Residence"
-//                 className="w-full border p-2 rounded"
-//               />
-//               <button
-//                 type="submit"
-//                 className="px-4 py-2 bg-pink-600 text-white rounded-md"
-//               >
-//                 Save New Believer
-//               </button>
-//             </form>
-//           </div>
-//         )}
-
-//         {/* Finance */}
-//         {activeTab === "finance" && (
-//           <div>
-//             <Toolbar section="finance" />
-//             <div className="mb-4">[Calendar Here]</div>
-//             <table className="w-full border">
-//               <thead>
-//                 <tr className="bg-gray-100">
-//                   <th className="border px-2 py-1">Date</th>
-//                   <th className="border px-2 py-1">Amount</th>
-//                   <th className="border px-2 py-1">Service Type</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 <tr>
-//                   <td className="border px-2 py-1">
-//                     <input type="date" className="w-full" />
-//                   </td>
-//                   <td className="border px-2 py-1">
-//                     <input type="number" className="w-full" />
-//                   </td>
-//                   <td className="border px-2 py-1">
-//                     <input
-//                       type="text"
-//                       placeholder="Service"
-//                       className="w-full"
-//                     />
-//                   </td>
-//                 </tr>
-//               </tbody>
-//             </table>
-//           </div>
-//         )}
-
-//         {/* Development */}
-//         {activeTab === "development" && (
-//           <div>
-//             <Toolbar section="development" />
-//             <table className="w-full border">
-//               <thead>
-//                 <tr className="bg-gray-100">
-//                   <th className="border px-2 py-1">Project</th>
-//                   <th className="border px-2 py-1">Status</th>
-//                   <th className="border px-2 py-1">Deadline</th>
-//                   <th className="border px-2 py-1">Actions</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 <tr>
-//                   <td className="border px-2 py-1">
-//                     <input
-//                       type="text"
-//                       placeholder="Project Name"
-//                       className="w-full"
-//                     />
-//                   </td>
-//                   <td className="border px-2 py-1">
-//                     <select className="w-full">
-//                       <option>Current</option>
-//                       <option>Future</option>
-//                       <option>Finished</option>
-//                     </select>
-//                   </td>
-//                   <td className="border px-2 py-1">
-//                     <input type="date" className="w-full" />
-//                   </td>
-//                   <td className="border px-2 py-1">
-//                     <button className="text-red-600">Delete</button>
-//                   </td>
-//                 </tr>
-//               </tbody>
-//             </table>
-//             <button className="mt-4 px-3 py-1 bg-red-600 text-white rounded-md">
-//               Clear All
-//             </button>
-//           </div>
-//         )}
-
-//         {/* Missions */}
-//         {activeTab === "missions" && (
-//           <div>
-//             <Toolbar section="missions" />
-//             <div className="mb-4">[Missions Calendar Here]</div>
-//             <table className="w-full border">
-//               <thead>
-//                 <tr className="bg-gray-100">
-//                   <th className="border px-2 py-1">Partner</th>
-//                   <th className="border px-2 py-1">Support</th>
-//                   <th className="border px-2 py-1">Phone</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 <tr>
-//                   <td className="border px-2 py-1">
-//                     <input type="text" placeholder="Name" className="w-full" />
-//                   </td>
-//                   <td className="border px-2 py-1">
-//                     <input
-//                       type="text"
-//                       placeholder="Support Type/Amount"
-//                       className="w-full"
-//                     />
-//                   </td>
-//                   <td className="border px-2 py-1">
-//                     <input type="text" placeholder="Phone" className="w-full" />
-//                   </td>
-//                 </tr>
-//               </tbody>
-//             </table>
-//           </div>
-//         )}
-
-//         {/* GCC Schools */}
-//         {activeTab === "gcc-schools" && (
-//           <div>
-//             <Toolbar section="gcc-schools" />
-//             <p className="text-gray-600">
-//               GCC Schools section (structure to be expanded later).
-//             </p>
-//           </div>
-//         )}
-
-//         {/* Departments */}
-//         {activeTab === "departments" && (
-//           <div>
-//             <Toolbar section="departments" />
-//             <form className="space-y-4 mb-6">
-//               <input
-//                 type="text"
-//                 placeholder="Department Name"
-//                 className="w-full border p-2 rounded"
-//               />
-//               <button
-//                 type="submit"
-//                 className="px-4 py-2 bg-pink-600 text-white rounded-md"
-//               >
-//                 Save Department
-//               </button>
-//             </form>
-//             <table className="w-full border">
-//               <thead>
-//                 <tr className="bg-gray-100">
-//                   <th className="border px-2 py-1">Member Name</th>
-//                   <th className="border px-2 py-1">Position</th>
-//                   <th className="border px-2 py-1">Phone Number</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 <tr>
-//                   <td className="border px-2 py-1">
-//                     <input type="text" placeholder="Name" className="w-full" />
-//                   </td>
-//                   <td className="border px-2 py-1">
-//                     <input
-//                       type="text"
-//                       placeholder="Leader/Member"
-//                       className="w-full"
-//                     />
-//                   </td>
-//                   <td className="border px-2 py-1">
-//                     <input type="text" placeholder="Phone" className="w-full" />
-//                   </td>
-//                 </tr>
-//               </tbody>
-//             </table>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Adults;
 
 
 
 import React, { useState } from "react";
+import FinanceSummary from "../components/FinanceSummary";
 
 export default function Adults() {
   const [activeTab, setActiveTab] = useState("membership");
@@ -635,6 +311,8 @@ export default function Adults() {
       )}
 
       {/* Finance */}
+
+      {/* Finance */}
       {activeTab === "finance" && (
         <div>
           <h2 className="text-lg font-semibold mb-2">Finance</h2>
@@ -646,6 +324,24 @@ export default function Adults() {
               setFinanceForm({ ...financeForm, date: e.target.value })
             }
           />
+
+          {/* Dropdown for Service Type */}
+          <select
+            className="border p-2 mr-2"
+            value={financeForm.service}
+            onChange={(e) =>
+              setFinanceForm({ ...financeForm, service: e.target.value })
+            }
+          >
+            <option value="">Select Service Type</option>
+            <option value="Sunday Service">Sunday Service</option>
+            <option value="Midweek Service">Midweek Service</option>
+            <option value="Conference/Revival/Kesha">
+              Conference/Revival/Kesha
+            </option>
+          </select>
+
+          {/* Amount input */}
           <input
             className="border p-2 mr-2"
             placeholder="Amount"
@@ -654,14 +350,8 @@ export default function Adults() {
               setFinanceForm({ ...financeForm, amount: e.target.value })
             }
           />
-          <input
-            className="border p-2 mr-2"
-            placeholder="Service Type"
-            value={financeForm.service}
-            onChange={(e) =>
-              setFinanceForm({ ...financeForm, service: e.target.value })
-            }
-          />
+
+          {/* Save button */}
           <button
             onClick={addFinance}
             className="bg-pink-600 text-white px-4 py-2 rounded"
@@ -669,6 +359,7 @@ export default function Adults() {
             Save
           </button>
 
+          {/* Finance entries list */}
           <ul className="mt-4">
             {finance.map((f, i) => (
               <li
@@ -686,6 +377,7 @@ export default function Adults() {
             ))}
           </ul>
 
+          {/* Download + Print */}
           <div className="mt-2">
             <button
               onClick={() => downloadData(finance, "finance.json")}
@@ -700,6 +392,9 @@ export default function Adults() {
               Print
             </button>
           </div>
+
+          {/* Finance Summary Component (monthly + yearly totals) */}
+          <FinanceSummary finance={finance} />
         </div>
       )}
 
