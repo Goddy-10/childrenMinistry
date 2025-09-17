@@ -45,6 +45,8 @@ import Reports from "./pages/Reports";
 import Timetable from "./pages/Timetable";
 import Adults from "./pages/Adults";
 import ChildrenMinistry from "./pages/ChildrenMinistry";
+import VisitorQRCode from "./pages/VisitorQrCode";
+import VisitorForm from "./pages/VisitorForm";
 
 export default function App() {
   return (
@@ -54,6 +56,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/adults" element={<Adults />} />
+          <Route path="/visitor-qr" element={<VisitorQRCode />} />
+          <Route path="/visitor-form" element={<VisitorForm />} />
 
           {/* ✅ Children Ministry with nested tabs */}
           <Route path="/children-ministry" element={<ChildrenMinistry />}>

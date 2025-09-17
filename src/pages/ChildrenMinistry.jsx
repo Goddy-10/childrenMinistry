@@ -18,7 +18,7 @@ export default function ChildrenMinistry() {
   return (
     <div className="min-h-screen bg-gray-500 flex pt-20 px-4 md:px-6 items-start justify-center">
       {/* Card */}
-      <div className="bg-white w-full md:w-3/4 max-w-6xl min-h-[70vh] rounded-2xl shadow-2xl overflow-hidden">
+      <div className="bg-white w-full lg:w-100 max-w-8xl min-h-[75vh] rounded-2xl shadow-2xl overflow-hidden">
         {/* Title */}
         <div className="bg-pink-600 text-white text-center px-6 py-4 md:py-6">
           <h2 className="text-xl md:text-2xl font-bold">Children Ministry</h2>

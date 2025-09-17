@@ -131,13 +131,15 @@ import ProgramsTab from "@/components/ProgramsTab"; // 👈 import the new Progr
 
 export default function ClassesPage() {
   const tabs = [
+    { id: "programs", label: "Programs" },
+    { id: "teachers", label: "Teachers" },
     { id: "gifted-brains", label: "Gifted Brains (0–3 yrs)" },
     { id: "beginners", label: "Beginners (3–6 yrs)" },
     { id: "shinners", label: "Shinners (6–9 yrs)" },
     { id: "conquerors", label: "Conquerors (9–13 yrs)" },
     { id: "teens", label: "Teens (13-16)" },
-    { id: "teachers", label: "Teachers" },
-    { id: "programs", label: "Programs" }, // 👈 Programs tab
+
+    // 👈 Programs tab
   ];
 
   const [activeTab, setActiveTab] = useState("gifted-brains");
