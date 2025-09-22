@@ -47,6 +47,7 @@ import Adults from "./pages/Adults";
 import ChildrenMinistry from "./pages/ChildrenMinistry";
 import VisitorQRCode from "./pages/VisitorQrCode";
 import VisitorForm from "./pages/VisitorForm";
+import Gallery from "./pages/Gallery";
 
 export default function App() {
   return (
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/adults" element={<Adults />} />
           <Route path="/visitor-qr" element={<VisitorQRCode />} />
           <Route path="/visitor-form" element={<VisitorForm />} />
+          <Route path="/gallery" element={<Gallery/>} />
 
           {/* ✅ Children Ministry with nested tabs */}
           <Route path="/children-ministry" element={<ChildrenMinistry />}>

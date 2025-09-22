@@ -44,7 +44,7 @@ export default function VisitorForm() {
       localStorage.setItem("pendingVisitors", JSON.stringify(pending));
       setMessage({
         type: "warning",
-        text: "Could not reach server. Your submission was saved locally and can be synced when backend is available.",
+        text: "Could not reach server. we have saved your submission locally and will be synced when server is available.",
       });
       setForm({ name: "", phone: "", residence: "" });
     } finally {

@@ -91,6 +91,7 @@ export default function Header() {
     { name: "Home", path: "/" },
     { name: "Main Church", path: "/adults" },
     { name: "Children Ministry", path: "/children-ministry" },
+    { name: "Church Gallery", path: "/gallery" },
     { name: "Visitors", path: "/visitor-qr" },
   ];
 
