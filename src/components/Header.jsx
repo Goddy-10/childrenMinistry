@@ -93,6 +93,7 @@ export default function Header() {
     { name: "Children Ministry", path: "/children-ministry" },
     { name: "Church Gallery", path: "/gallery" },
     { name: "Visitors", path: "/visitor-qr" },
+    { name: "Events", path: "/events" },
   ];
 
   return (

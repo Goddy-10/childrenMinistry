@@ -77,7 +77,7 @@ export default function VisitorQRCode() {
           className="inline-block bg-white p-4 rounded-lg border border-gray-200"
         >
           {/* renderAs="canvas" so we can export as PNG */}
-          <QRCodeCanvas value={"http://10.217.201.239:5173/visitor-form"} size={220} />
+          <QRCodeCanvas value={"http://10.112.153.239:5173/visitor-form"} size={220} />
         </div>
 
         <p className="text-sm text-gray-600 mt-4">

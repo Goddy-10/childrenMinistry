@@ -131,7 +131,7 @@ import ProgramsTab from "@/components/ProgramsTab"; // 👈 import the new Progr
 
 export default function ClassesPage() {
   const tabs = [
-    { id: "programs", label: "Programs" },
+    
     { id: "teachers", label: "Teachers" },
     { id: "gifted-brains", label: "Gifted Brains (0–3 yrs)" },
     { id: "beginners", label: "Beginners (3–6 yrs)" },
@@ -250,9 +250,7 @@ export default function ClassesPage() {
               </div>
             )}
 
-            {activeTab === "programs" && (
-              <ProgramsTab /> // 👈 render ProgramsTab here
-            )}
+            
           </div>
         </div>
       </div>

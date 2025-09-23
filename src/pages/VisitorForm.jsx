@@ -31,7 +31,7 @@ export default function VisitorForm() {
 
       setMessage({
         type: "success",
-        text: "Thank you — your visit has been recorded.",
+        text: "Thank you,your visit has been appreciated.",
       });
       setForm({ name: "", phone: "", residence: "" });
     } catch (err) {
