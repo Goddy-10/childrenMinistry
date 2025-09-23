@@ -73,7 +73,7 @@ export default function ChildrenMinistry() {
       : "px-4 py-2 rounded-lg font-medium transition bg-gray-200 text-gray-800 hover:bg-gray-300";
 
   return (
-    <div className="min-h-screen bg-gray-500 flex pt-20 px-4 md:px-6 items-start justify-center">
+    <div className="min-h-screen  bg-gray-500 flex pt-20 px-4 md:px-6 items-start justify-center">
       {/* Card */}
       <div className="bg-white w-full lg:w-100 max-w-8xl min-h-[75vh] rounded-2xl shadow-2xl overflow-hidden">
         {/* Title */}

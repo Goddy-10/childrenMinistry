@@ -37,7 +37,7 @@ export default function Events() {
                 : "bg-gray-200 text-gray-800"
             }`}
           >
-            Upcoming
+            Upcoming Events
           </button>
           <button
             onClick={() => setFilter("past")}
@@ -47,7 +47,7 @@ export default function Events() {
                 : "bg-gray-200 text-gray-800"
             }`}
           >
-            Past
+            Past Events
           </button>
         </div>
 

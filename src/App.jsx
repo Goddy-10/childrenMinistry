@@ -36,6 +36,7 @@
 // src/App.jsx
 import { Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
+import Layout from "./components/Layout";
 import Header from "./components/Header";
 import Teachers from "./pages/Teachers";
 import ClassesPage from "./pages/Classes";
@@ -57,6 +58,8 @@ export default function App() {
       <Header />
       <div className="pt-16">
         <Routes>
+          <Route element={<Layout />}>
+            
           <Route path="/" element={<HomePage />} />
           <Route path="/adults" element={<Adults />} />
           <Route path="/visitor-qr" element={<VisitorQRCode />} />
@@ -70,7 +73,8 @@ export default function App() {
             <Route path="teachers" element={<Teachers />} />
             <Route path="classes" element={<ClassesPage />} />
             <Route path="children" element={<Children />} />
-            <Route path="programs" element={<ProgramsTab />} />
+              <Route path="programs" element={<ProgramsTab />} />
+              </Route>
           </Route>
         </Routes>
       </div>
