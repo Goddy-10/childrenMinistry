@@ -1,8 +1,10 @@
 // src/pages/Events.jsx
 import { useState } from "react";
 import AddEventModal from "../components/AddEventModal";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Events() {
+  const { user } = useAuth(); // ✅ get logged-in user
   const [events, setEvents] = useState([]); // backend will replace this later
   const [filter, setFilter] = useState("upcoming");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -103,15 +105,17 @@ export default function Events() {
           )}
         </div>
 
-        {/* Add Event Button */}
-        <div className="mt-6">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-pink-600 text-white px-6 py-2 rounded-lg shadow hover:bg-pink-700 transition"
-          >
-            + Add Event
-          </button>
-        </div>
+        {/* ✅ Add Event Button (visible to admins only) */}
+        {user?.role === "admin" && (
+          <div className="mt-6">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-pink-600 text-white px-6 py-2 rounded-lg shadow hover:bg-pink-700 transition"
+            >
+              + Add Event
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Modal */}
