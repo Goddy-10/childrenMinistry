@@ -71,6 +71,9 @@ import Gallery from "./pages/Gallery";
 import ProgramsTab from "./components/ProgramsTab";
 import Events from "./pages/Events";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ChangePassword from "./pages/ChangePassword";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 
 export default function App() {
   return (
@@ -80,12 +83,31 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             {/* Public routes */}
+
             <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<Login />} />
+            {/* 🔒 Profile: visible only when logged in */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "teacher"]}>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/adults"
               element={
                 <ProtectedRoute allowedRoles={["admin", "teacher"]}>
                   <Adults />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/change-password"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "teacher"]}>
+                  <ChangePassword />
                 </ProtectedRoute>
               }
             />

@@ -47,7 +47,7 @@ export default function HomePage() {
     if (paused) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % mediaItems.length);
-    }, 4000);
+    }, 3000);
     return () => clearInterval(timer);
   }, [mediaItems.length, paused]);
 
