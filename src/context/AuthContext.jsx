@@ -1,162 +1,78 @@
+// //src/context/AuthContext.jsx
+// import { createContext, useContext, useEffect, useState } from "react";
 
-
-// // src/context/AuthContext.jsx
-// import React, { createContext, useContext, useEffect, useState } from "react";
-
-// const AuthContext = createContext(null);
+// const AuthContext = createContext();
 
 // export function AuthProvider({ children }) {
 //   const [user, setUser] = useState(null);
 //   const [token, setToken] = useState(localStorage.getItem("token") || null);
 //   const [loading, setLoading] = useState(true);
 
-//   // Fetch current user from backend
-//   const fetchUser = async (jwt) => {
-//     if (!jwt) return;
+//   // Fetch current user using token
+//   const fetchUser = async (jwtToken) => {
+//     if (!jwtToken) {
+//       setUser(null);
+//       setLoading(false);
+//       return;
+//     }
 
-//     setLoading(true);
 //     try {
 //       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
 //         headers: {
-//           Authorization: `Bearer ${jwt}`,
+//           Authorization: `Bearer ${jwtToken}`,
 //           "Content-Type": "application/json",
 //         },
 //       });
 
-//       if (!res.ok) {
-//         // token invalid or expired
-//         setUser(null);
-//         setToken(null);
-//         localStorage.removeItem("token");
-//         console.error("Auth: fetchUser failed", res.status);
-//         return;
+//       // Check if response is JSON
+//       let data = null;
+//       try {
+//         data = await res.json();
+//       } catch (err) {
+//         console.error("Failed to parse /auth/me JSON:", err, await res.text());
+//         data = null;
 //       }
 
-//       const data = await res.json(); // { id, username, name, role, ... }
-//       setUser(data);
+//       if (res.ok && data) {
+//         setUser(data);
+//       } else {
+//         setUser(null);
+//       }
 //     } catch (err) {
-//       console.error("Auth: fetchUser error", err);
+//       console.error("Fetch user error:", err);
 //       setUser(null);
-//       setToken(null);
-//       localStorage.removeItem("token");
 //     } finally {
 //       setLoading(false);
 //     }
 //   };
 
+//   // Login function
+//   const login = async (jwtToken, userData = null) => {
+//     localStorage.setItem("token", jwtToken);
+//     setToken(jwtToken);
+
+//     if (userData) {
+//       setUser(userData);
+//       setLoading(false);
+//     } else {
+//       await fetchUser(jwtToken);
+//     }
+//   };
+
+//   // Logout function
+//   const logout = () => {
+//     localStorage.removeItem("token");
+//     setToken(null);
+//     setUser(null);
+//   };
+
 //   // On mount, fetch user if token exists
 //   useEffect(() => {
-//     if (token) fetchUser(token);
-//     else setLoading(false);
-//   }, [token]);
-
-//   // Login: store token and fetch user
-//   const login = async ({ token: jwt }) => {
-//     if (!jwt) return;
-//     localStorage.setItem("token", jwt);
-//     setToken(jwt);
-//     await fetchUser(jwt);
-//   };
-
-//   // Logout: clear everything
-//   const logout = () => {
-//     setUser(null);
-//     setToken(null);
-//     localStorage.removeItem("token");
-//   };
-
-//   // Role helper
-//   const hasRole = (allowedRoles) => {
-//     if (!user) return false;
-//     if (!allowedRoles) return true;
-//     return allowedRoles.includes(user.role);
-//   };
-
-//   return (
-//     <AuthContext.Provider
-//       value={{
-//         user,
-//         token,
-//         loading,
-//         login,
-//         logout,
-//         hasRole,
-//       }}
-//     >
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// }
-
-// export function useAuth() {
-//   const ctx = useContext(AuthContext);
-//   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-//   return ctx;
-// }
-
-
-
-
-
-
-
-
-// src/context/AuthContext.jsx
-// import { createContext, useContext, useState, useEffect } from "react";
-
-// const AuthContext = createContext();
-
-// export function AuthProvider({ children }) {
-//   const [user, setUser] = useState(() => {
-//     const savedUser = localStorage.getItem("user");
-//     return savedUser ? JSON.parse(savedUser) : null;
-//   });
-//   const [token, setToken] = useState(() => localStorage.getItem("token"));
-//   const [loading, setLoading] = useState(true);
-
-//   // login function
-//   const login = async (jwtToken, userData) => {
-//     console.log("Storing token and user:", jwtToken, userData); // debug
-//     localStorage.setItem("token", jwtToken);
-//     localStorage.setItem("user", JSON.stringify(userData));
-//     setToken(jwtToken);
-//     setUser(userData);
-//   };
-
-//   // logout
-//   const logout = () => {
-//     localStorage.removeItem("token");
-//     localStorage.removeItem("user");
-//     setToken(null);
-//     setUser(null);
-//   };
-
-//   // fetch current user (if token exists)
-//   useEffect(() => {
-//     const fetchUser = async () => {
-//       if (!token) {
-//         setLoading(false);
-//         return;
-//       }
-//       try {
-//         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//             "Content-Type": "application/json",
-//           },
-//         });
-//         if (!res.ok) throw new Error("Failed to fetch user");
-//         const data = await res.json();
-//         console.log("Fetched user:", data); // debug
-//         setUser(data);
-//       } catch (err) {
-//         console.error("fetchUser error:", err);
-//         logout();
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchUser();
+//     if (token) {
+//       fetchUser(token);
+//     } else {
+//       setLoading(false);
+//     }
 //   }, [token]);
 
 //   return (
@@ -168,28 +84,156 @@
 
 // export const useAuth = () => useContext(AuthContext);
 
+// // src/context/AuthContext.jsx
+// import { createContext, useContext, useEffect, useState } from "react";
 
+// const AuthContext = createContext();
 
+// export function AuthProvider({ children }) {
+//   const [user, setUser] = useState(null);
+//   const [token, setToken] = useState(localStorage.getItem("token") || null);
+//   const [loading, setLoading] = useState(true);
 
+//   // Fetch current user using token
+//   const fetchUser = async (jwtToken) => {
+//     if (!jwtToken) {
+//       setUser(null);
+//       setLoading(false);
+//       return;
+//     }
 
+//     try {
+//       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
+//         headers: {
+//           Authorization: `Bearer ${jwtToken}`,
+//           "Content-Type": "application/json",
+//         },
+//       });
 
+//       let data = null;
+//       try {
+//         data = await res.json();
+//       } catch (err) {
+//         console.error("Failed to parse /auth/me JSON:", err, await res.text());
+//         data = null;
+//       }
 
+//       if (res.ok && data) {
+//         setUser(data);
+//         localStorage.setItem("user", JSON.stringify(data)); // 🟩 added — save user persistently
+//       } else {
+//         setUser(null);
+//         localStorage.removeItem("user"); // 🟩 added — remove invalid user
+//       }
+//     } catch (err) {
+//       console.error("Fetch user error:", err);
+//       setUser(null);
+//       localStorage.removeItem("user"); // 🟩 added — clean up on error
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
+//   // Login function
+//   const login = async (jwtToken, userData = null) => {
+//     localStorage.setItem("token", jwtToken);
+//     setToken(jwtToken);
 
+//     if (userData) {
+//       setUser(userData);
+//       localStorage.setItem("user", JSON.stringify(userData)); // 🟩 added — save user in localStorage
+//       setLoading(false);
+//     } else {
+//       await fetchUser(jwtToken);
+//     }
+//   };
 
+//   // Logout function
+//   const logout = () => {
+//     localStorage.removeItem("token");
+//     localStorage.removeItem("user"); // 🟩 added — remove user on logout
+//     setToken(null);
+//     setUser(null);
+//   };
 
+//   // On mount, fetch user if token exists
+//   useEffect(() => {
+//     const savedUser = localStorage.getItem("user"); // 🟩 added — try to load user from storage
+//     if (token && savedUser) {
+//       setUser(JSON.parse(savedUser)); // 🟩 added — restore persisted user
+//       setLoading(false);
+//     } else if (token) {
+//       fetchUser(token);
+//     } else {
+//       setLoading(false);
+//     }
+//   }, [token]);
 
+//   return (
+//     <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// }
 
+// export const useAuth = () => useContext(AuthContext);
 
-//src/context/AuthContext.jsx
+// src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser && savedUser !== "undefined" ? JSON.parse(savedUser) : null;
+  });
+
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null); // 🟩 For inactivity warning toast
+
+  // 🟩 Auto logout timer setup (3 hours)
+  const AUTO_LOGOUT_TIME = 3 * 60 * 60 * 1000; // 3 hours
+  const WARNING_TIME = AUTO_LOGOUT_TIME - 60 * 1000; // Show toast 1 min before logout
+  let logoutTimer;
+  let warningTimer;
+
+  const resetTimer = () => {
+    clearTimeout(logoutTimer);
+    clearTimeout(warningTimer);
+
+    // 🟩 schedule warning toast 1 min before logout
+    warningTimer = setTimeout(() => {
+      setToast("You’ll be logged out in 1 minute due to inactivity.");
+      setTimeout(() => setToast(null), 60000); // hide toast after 1 min
+    }, WARNING_TIME);
+
+    // 🟩 schedule actual logout
+    logoutTimer = setTimeout(() => {
+      console.log("Auto logout: inactive for 3 hours");
+      logout();
+    }, AUTO_LOGOUT_TIME);
+  };
+
+  const setupInactivityListeners = () => {
+    ["mousemove", "click", "keydown"].forEach((event) =>
+      window.addEventListener(event, resetTimer)
+    );
+  };
+
+  const removeInactivityListeners = () => {
+    ["mousemove", "click", "keydown"].forEach((event) =>
+      window.removeEventListener(event, resetTimer)
+    );
+  };
+
+  // 🟩 Helper toast component
+  const Toast = ({ message }) => (
+    <div className="fixed top-4 right-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fadeIn">
+      {message}
+    </div>
+  );
 
   // Fetch current user using token
   const fetchUser = async (jwtToken) => {
@@ -207,7 +251,6 @@ export function AuthProvider({ children }) {
         },
       });
 
-      // Check if response is JSON
       let data = null;
       try {
         data = await res.json();
@@ -218,12 +261,15 @@ export function AuthProvider({ children }) {
 
       if (res.ok && data) {
         setUser(data);
+        localStorage.setItem("user", JSON.stringify(data)); // 🟩 persist user
       } else {
         setUser(null);
+        localStorage.removeItem("user");
       }
     } catch (err) {
       console.error("Fetch user error:", err);
       setUser(null);
+      localStorage.removeItem("user");
     } finally {
       setLoading(false);
     }
@@ -236,31 +282,51 @@ export function AuthProvider({ children }) {
 
     if (userData) {
       setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData)); // 🟩 save user
       setLoading(false);
     } else {
       await fetchUser(jwtToken);
     }
+
+    // 🟩 start inactivity tracking after login
+    resetTimer();
+    setupInactivityListeners();
   };
 
   // Logout function
   const logout = () => {
+    console.log("Logging out...");
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setToken(null);
     setUser(null);
+    removeInactivityListeners(); // 🟩 clean up listeners
+    clearTimeout(logoutTimer);
+    clearTimeout(warningTimer);
+    setToast(null);
   };
 
   // On mount, fetch user if token exists
   useEffect(() => {
     if (token) {
       fetchUser(token);
+      resetTimer(); // 🟩 start timer
+      setupInactivityListeners();
     } else {
       setLoading(false);
     }
+
+    return () => {
+      removeInactivityListeners();
+      clearTimeout(logoutTimer);
+      clearTimeout(warningTimer);
+    };
   }, [token]);
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, loading }}>
       {children}
+      {toast && <Toast message={toast} />} {/* 🟩 render toast */}
     </AuthContext.Provider>
   );
 }

@@ -19,22 +19,25 @@
 //     setLoading(true);
 
 //     try {
-//       const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+//       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
 //         method: "POST",
 //         headers: { "Content-Type": "application/json" },
 //         body: JSON.stringify({ identifier, password, role }),
 //       });
 
 //       if (!res.ok) {
-//         const errData = await res.json();
-//         throw new Error(errData.message || "Login failed");
+//         let errMsg = "Login failed";
+//         try {
+//           const errData = await res.json();
+//           errMsg = errData.message || errMsg;
+//         } catch {}
+//         throw new Error(errMsg);
 //       }
 
 //       const data = await res.json(); // { token: "JWT..." }
-//       await login(data.token,data.user);
+//       await login(data.token); // AuthContext will fetch user automatically
 
-//       // ✅ Redirect after login
-//       navigate("/");
+//       navigate("/"); // redirect to home/dashboard
 //     } catch (err) {
 //       setError(err.message);
 //     } finally {
@@ -99,19 +102,6 @@
 //   );
 // }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 // src/pages/Login.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -133,11 +123,14 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier, password, role }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier, password, role }),
+        }
+      );
 
       if (!res.ok) {
         let errMsg = "Login failed";
@@ -149,9 +142,12 @@ export default function Login() {
       }
 
       const data = await res.json(); // { token: "JWT..." }
-      await login(data.token); // AuthContext will fetch user automatically
-
-      navigate("/"); // redirect to home/dashboard
+      await login(data.token, data.user); // AuthContext will fetch user automatically
+      if (data.user.must_change_password) {
+        navigate("/change-password");
+      } else {
+        navigate("/"); // redirect to home/dashboard
+      }
     } catch (err) {
       setError(err.message);
     } finally {
