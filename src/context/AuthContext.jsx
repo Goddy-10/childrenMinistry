@@ -1,182 +1,4 @@
-// //src/context/AuthContext.jsx
-// import { createContext, useContext, useEffect, useState } from "react";
 
-// const AuthContext = createContext();
-
-// export function AuthProvider({ children }) {
-//   const [user, setUser] = useState(null);
-//   const [token, setToken] = useState(localStorage.getItem("token") || null);
-//   const [loading, setLoading] = useState(true);
-
-//   // Fetch current user using token
-//   const fetchUser = async (jwtToken) => {
-//     if (!jwtToken) {
-//       setUser(null);
-//       setLoading(false);
-//       return;
-//     }
-
-//     try {
-//       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
-//         headers: {
-//           Authorization: `Bearer ${jwtToken}`,
-//           "Content-Type": "application/json",
-//         },
-//       });
-
-//       // Check if response is JSON
-//       let data = null;
-//       try {
-//         data = await res.json();
-//       } catch (err) {
-//         console.error("Failed to parse /auth/me JSON:", err, await res.text());
-//         data = null;
-//       }
-
-//       if (res.ok && data) {
-//         setUser(data);
-//       } else {
-//         setUser(null);
-//       }
-//     } catch (err) {
-//       console.error("Fetch user error:", err);
-//       setUser(null);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // Login function
-//   const login = async (jwtToken, userData = null) => {
-//     localStorage.setItem("token", jwtToken);
-//     setToken(jwtToken);
-
-//     if (userData) {
-//       setUser(userData);
-//       setLoading(false);
-//     } else {
-//       await fetchUser(jwtToken);
-//     }
-//   };
-
-//   // Logout function
-//   const logout = () => {
-//     localStorage.removeItem("token");
-//     setToken(null);
-//     setUser(null);
-//   };
-
-//   // On mount, fetch user if token exists
-//   useEffect(() => {
-//     if (token) {
-//       fetchUser(token);
-//     } else {
-//       setLoading(false);
-//     }
-//   }, [token]);
-
-//   return (
-//     <AuthContext.Provider value={{ user, token, login, logout, loading }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// }
-
-// export const useAuth = () => useContext(AuthContext);
-
-// // src/context/AuthContext.jsx
-// import { createContext, useContext, useEffect, useState } from "react";
-
-// const AuthContext = createContext();
-
-// export function AuthProvider({ children }) {
-//   const [user, setUser] = useState(null);
-//   const [token, setToken] = useState(localStorage.getItem("token") || null);
-//   const [loading, setLoading] = useState(true);
-
-//   // Fetch current user using token
-//   const fetchUser = async (jwtToken) => {
-//     if (!jwtToken) {
-//       setUser(null);
-//       setLoading(false);
-//       return;
-//     }
-
-//     try {
-//       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
-//         headers: {
-//           Authorization: `Bearer ${jwtToken}`,
-//           "Content-Type": "application/json",
-//         },
-//       });
-
-//       let data = null;
-//       try {
-//         data = await res.json();
-//       } catch (err) {
-//         console.error("Failed to parse /auth/me JSON:", err, await res.text());
-//         data = null;
-//       }
-
-//       if (res.ok && data) {
-//         setUser(data);
-//         localStorage.setItem("user", JSON.stringify(data)); // 🟩 added — save user persistently
-//       } else {
-//         setUser(null);
-//         localStorage.removeItem("user"); // 🟩 added — remove invalid user
-//       }
-//     } catch (err) {
-//       console.error("Fetch user error:", err);
-//       setUser(null);
-//       localStorage.removeItem("user"); // 🟩 added — clean up on error
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // Login function
-//   const login = async (jwtToken, userData = null) => {
-//     localStorage.setItem("token", jwtToken);
-//     setToken(jwtToken);
-
-//     if (userData) {
-//       setUser(userData);
-//       localStorage.setItem("user", JSON.stringify(userData)); // 🟩 added — save user in localStorage
-//       setLoading(false);
-//     } else {
-//       await fetchUser(jwtToken);
-//     }
-//   };
-
-//   // Logout function
-//   const logout = () => {
-//     localStorage.removeItem("token");
-//     localStorage.removeItem("user"); // 🟩 added — remove user on logout
-//     setToken(null);
-//     setUser(null);
-//   };
-
-//   // On mount, fetch user if token exists
-//   useEffect(() => {
-//     const savedUser = localStorage.getItem("user"); // 🟩 added — try to load user from storage
-//     if (token && savedUser) {
-//       setUser(JSON.parse(savedUser)); // 🟩 added — restore persisted user
-//       setLoading(false);
-//     } else if (token) {
-//       fetchUser(token);
-//     } else {
-//       setLoading(false);
-//     }
-//   }, [token]);
-
-//   return (
-//     <AuthContext.Provider value={{ user, token, login, logout, loading }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// }
-
-// export const useAuth = () => useContext(AuthContext);
 
 // src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
@@ -332,3 +154,24 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Custom hook for easier imports

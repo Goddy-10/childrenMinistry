@@ -1,4 +1,4 @@
-// // src/pages/ChangePassword.jsx
+
 // import { useState } from "react";
 // import { useAuth } from "@/context/AuthContext";
 // import { useNavigate, useLocation } from "react-router-dom";
@@ -6,7 +6,7 @@
 // const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 // export default function ChangePassword() {
-//   const { user, token, setUser } = useAuth(); // make sure your AuthContext exposes setUser and token
+//   const { user, token, setUser } = useAuth();
 //   const [oldPassword, setOldPassword] = useState("");
 //   const [newPassword, setNewPassword] = useState("");
 //   const [confirmPassword, setConfirmPassword] = useState("");
@@ -15,12 +15,12 @@
 
 //   const navigate = useNavigate();
 //   const location = useLocation();
-//   // where to go after successful change (default to home)
-//   const from = location.state?.from?.pathname || "/";
+//   const from = location.state?.from || "/";
 
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
 //     setError("");
+
 //     if (!oldPassword || !newPassword) {
 //       setError("Please fill both fields.");
 //       return;
@@ -32,7 +32,7 @@
 
 //     setSaving(true);
 //     try {
-//       const res = await fetch(`${API}/teachers/change-password`, {
+//       const res = await fetch(`${API}/api/auth/change-password`, {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",
@@ -49,7 +49,7 @@
 //         throw new Error(data?.message || "Failed to change password");
 //       }
 
-//       // success: update user in context to clear first_login flag
+//       // ✅ NEW: update user context to disable password change requirement
 //       const updatedUser = {
 //         ...user,
 //         first_login: false,
@@ -58,7 +58,6 @@
 //       setUser(updatedUser);
 //       localStorage.setItem("cm_user", JSON.stringify(updatedUser));
 
-//       // redirect back to where they came from (or homepage)
 //       navigate(from, { replace: true });
 //     } catch (err) {
 //       setError(err.message || "Error");
@@ -121,6 +120,20 @@
 //   );
 // }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -128,7 +141,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function ChangePassword() {
-  const { user, token, setUser } = useAuth();
+  const { user, token, setUser, setToken, logout } = useAuth();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -154,6 +167,7 @@ export default function ChangePassword() {
 
     setSaving(true);
     try {
+      // 🔹 Step 1: Change password
       const res = await fetch(`${API}/api/auth/change-password`, {
         method: "POST",
         headers: {
@@ -166,23 +180,47 @@ export default function ChangePassword() {
         }),
       });
 
+      // 🔸 Handle invalid or expired token
+      if (res.status === 401) {
+        setError("Session expired. Please log in again.");
+        logout(); // clear local storage + context
+        navigate("/login", { replace: true });
+        return;
+      }
+
       if (!res.ok) {
         const data = await res.json().catch(() => null);
         throw new Error(data?.message || "Failed to change password");
       }
 
-      // ✅ NEW: update user context to disable password change requirement
-      const updatedUser = {
-        ...user,
-        first_login: false,
-        password_change_required: false,
-      };
-      setUser(updatedUser);
-      localStorage.setItem("cm_user", JSON.stringify(updatedUser));
+      // 🔹 Step 2: Auto re-login with the new password
+      // const loginRes = await fetch(`${API}/api/auth/login`, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     identifier: user.username,
+      //     password: newPassword,
+      //   }),
+      // });
 
+      // ✅ Step 2: Force logout and redirect to login
+      logout();
+      navigate("/login", { replace: true });
+
+      // if (!loginRes.ok) {
+      //   const loginErr = await loginRes.json().catch(() => null);
+      //   throw new Error(loginErr?.message || "Auto-login failed");
+      // }
+
+      const loginData = await loginRes.json();
+
+      // 🔹 Step 3: Update context + localStorage
+      await loginData(loginData.access_token, loginData.user);
+      // 🔹 Step 4: Redirect to dashboard or previous page
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.message || "Error");
+      console.error("Password change error:", err);
+      setError(err.message || "Error changing password");
     } finally {
       setSaving(false);
     }

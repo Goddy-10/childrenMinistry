@@ -182,7 +182,7 @@ export default function Login() {
           {/* Email/Phone */}
           <input
             type="text"
-            placeholder="Email or Phone"
+            placeholder="Username or Phone"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             required
