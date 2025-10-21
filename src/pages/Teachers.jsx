@@ -116,7 +116,7 @@ import { useAuth } from "../context/AuthContext";
 export default function Teachers() {
   const { token } = useAuth(); // use token from AuthContext
   const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
-  const API_TEACHERS = `${API}/teachers`;
+  const API_TEACHERS = `${API}/api/teachers`;
 
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,7 +129,7 @@ export default function Teachers() {
   const fetchTeachers = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_TEACHERS}/`, {
+      const res = await fetch(`${API_TEACHERS}`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
         },
@@ -172,7 +172,7 @@ export default function Teachers() {
     formData.append("password", newTeacher.password);
 
     try {
-      const res = await fetch(`${API_TEACHERS}/`, {
+      const res = await fetch(`${API_TEACHERS}`, {
         method: "POST",
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
@@ -223,7 +223,7 @@ export default function Teachers() {
     formData.append("bio", editTeacher.bio || "");
 
     try {
-      const res = await fetch(`${API_TEACHERS}/${editTeacher.id}`, {
+      const res = await fetch(`${API_TEACHERS}${editTeacher.id}`, {
         method: "PUT",
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
@@ -254,7 +254,7 @@ export default function Teachers() {
     if (!window.confirm("Are you sure you want to delete this teacher?")) return;
 
     try {
-      const res = await fetch(`${API_TEACHERS}/${id}`, {
+      const res = await fetch(`${API_TEACHERS}${id}`, {
         method: "DELETE",
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
