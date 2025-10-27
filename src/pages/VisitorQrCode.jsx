@@ -1,107 +1,458 @@
+
+
 // src/pages/VisitorQRCode.jsx
-import React, { useRef } from "react";
+// import React, { useEffect, useRef, useState } from "react";
+// import { QRCodeCanvas } from "qrcode.react";
+
+// const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+// export default function VisitorQRCode() {
+//   const containerRef = useRef(null);
+//   const [visitors, setVisitors] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   const visitorFormUrl = `${window.location.origin}/visitor-form`;
+
+//   // Fetch visitors from backend
+//   const fetchVisitors = async () => {
+//     try {
+//       const res = await fetch(`${API}/visitors`);
+//       const data = await res.json();
+//       setVisitors(data);
+//     } catch (err) {
+//       console.error("Failed to fetch visitors:", err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchVisitors();
+//   }, []);
+
+//   // Update follow-up status
+//   const toggleFollowUp = async (id, currentStatus) => {
+//     const newStatus = currentStatus === "pending" ? "contacted" : "pending";
+//     try {
+//       const res = await fetch(`${API}/visitors/${id}`, {
+//         method: "PATCH",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ follow_up_status: newStatus }),
+//       });
+//       const updated = await res.json();
+//       setVisitors((prev) =>
+//         prev.map((v) => (v.id === id ? updated : v))
+//       );
+//     } catch (err) {
+//       console.error("Failed to update follow-up:", err);
+//     }
+//   };
+
+//   // Delete visitor
+//   const deleteVisitor = async (id) => {
+//     if (!window.confirm("Delete this visitor?")) return;
+//     try {
+//       await fetch(`${API}/visitors/${id}`, { method: "DELETE" });
+//       setVisitors((prev) => prev.filter((v) => v.id !== id));
+//     } catch (err) {
+//       console.error("Failed to delete visitor:", err);
+//     }
+//   };
+
+//   // Clear all followed-up visitors
+//   const clearFollowedUp = async () => {
+//     if (!window.confirm("Clear all visitors who have been followed up?")) return;
+//     try {
+//       const followedIds = visitors.filter((v) => v.follow_up_status !== "pending").map(v => v.id);
+//       for (const id of followedIds) {
+//         await fetch(`${API}/visitors/${id}`, { method: "DELETE" });
+//       }
+//       setVisitors((prev) => prev.filter((v) => v.follow_up_status === "pending"));
+//     } catch (err) {
+//       console.error("Failed to clear followed-up visitors:", err);
+//     }
+//   };
+
+//   // QR download
+//   const downloadPNG = () => {
+//     const canvas = containerRef.current?.querySelector("canvas");
+//     if (!canvas) return alert("QR not ready yet");
+//     const dataUrl = canvas.toDataURL("image/png");
+//     const a = document.createElement("a");
+//     a.href = dataUrl;
+//     a.download = "visitor-qr.png";
+//     a.click();
+//   };
+
+//   // QR print
+//   const printQR = () => {
+//     const canvas = containerRef.current?.querySelector("canvas");
+//     if (!canvas) return alert("QR not ready yet");
+//     const dataUrl = canvas.toDataURL("image/png");
+//     const w = window.open("", "_blank");
+//     if (!w) return alert("Pop-up blocked");
+
+//     w.document.write(`
+//       <!doctype html>
+//       <html>
+//         <head>
+//           <meta charset="utf-8" />
+//           <title>Print Visitor QR</title>
+//           <style>
+//             body { font-family: system-ui, sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; color:#111827; }
+//             h1 { color:#be185d; }
+//             p { color:#374151; }
+//             img { margin-top:12px; max-width:80vw; }
+//             a { color:#7c3aed; text-decoration:underline; }
+//           </style>
+//         </head>
+//         <body>
+//           <h1>Visitor Registration</h1>
+//           <p>Scan this QR or open the link: <a href="${visitorFormUrl}">${visitorFormUrl}</a></p>
+//           <img src="${dataUrl}" alt="Visitor QR" />
+//           <script>
+//             window.onload = function() {
+//               setTimeout(() => { window.print(); }, 300);
+//               window.onafterprint = function() { window.close(); };
+//             }
+//           </script>
+//         </body>
+//       </html>
+//     `);
+//     w.document.close();
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-gray-100 p-6 pt-20">
+//       <h2 className="text-2xl font-bold text-pink-600 mb-6 text-center">
+//         Visitor Management & QR Code
+//       </h2>
+
+//       <div className="flex flex-col md:flex-row gap-6">
+//         {/* Left: Visitor table */}
+//         <div className="flex-1 bg-white p-4 rounded-2xl shadow-md overflow-auto max-h-[70vh]">
+//           <h3 className="font-semibold mb-2 text-lg">Visitors</h3>
+//           {loading ? (
+//             <p>Loading visitors...</p>
+//           ) : visitors.length === 0 ? (
+//             <p>No visitors yet.</p>
+//           ) : (
+//             <table className="w-full text-left border-collapse">
+//               <thead>
+//                 <tr>
+//                   <th className="border-b p-2">Name</th>
+//                   <th className="border-b p-2">Phone</th>
+//                   <th className="border-b p-2">Residence</th>
+//                   <th className="border-b p-2">Prayer</th>
+//                   <th className="border-b p-2">Follow-Up</th>
+//                   <th className="border-b p-2">Actions</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {visitors.map((v) => (
+//                   <tr
+//                     key={v.id}
+//                     className={
+//                       v.follow_up_status !== "pending"
+//                         ? "bg-gray-300 text-gray-700"
+//                         : ""
+//                     }
+//                   >
+//                     <td className="border-b p-2">{v.full_name}</td>
+//                     <td className="border-b p-2">{v.phone || "-"}</td>
+//                     <td className="border-b p-2">{v.residence || "-"}</td>
+//                     <td className="border-b p-2">{v.prayer_request || "-"}</td>
+//                     <td className="border-b p-2 text-center">
+//                       <input
+//                         type="checkbox"
+//                         checked={v.follow_up_status !== "pending"}
+//                         onChange={() => toggleFollowUp(v.id, v.follow_up_status)}
+//                       />
+//                     </td>
+//                     <td className="border-b p-2 text-center">
+//                       <button
+//                         onClick={() => deleteVisitor(v.id)}
+//                         className="text-red-500 hover:underline"
+//                       >
+//                         Delete
+//                       </button>
+//                     </td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+//           )}
+//           <div className="mt-4">
+//             <button
+//               onClick={clearFollowedUp}
+//               className="bg-pink-600 text-white px-4 py-2 rounded hover:brightness-95"
+//             >
+//               Clear Followed-Up Visitors
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Right: QR code */}
+//         <div className="flex-1 flex flex-col items-center bg-white p-4 rounded-2xl shadow-md">
+//           <h3 className="font-semibold mb-2 text-lg">Visitor QR Code</h3>
+//           <div
+//             ref={containerRef}
+//             className="inline-block bg-white p-4 rounded-lg border border-gray-200"
+//           >
+//             <QRCodeCanvas value={visitorFormUrl} size={220} />
+//           </div>
+
+//           <p className="text-sm text-gray-600 mt-4 text-center">
+//             Point visitors to this QR or copy the link below:
+//           </p>
+
+//           <p className="text-xs text-gray-500 break-words mt-2 text-center">
+//             {visitorFormUrl}
+//           </p>
+
+//           <div className="mt-4 flex gap-3 justify-center">
+//             <button
+//               onClick={downloadPNG}
+//               className="bg-pink-600 text-white px-4 py-2 rounded hover:brightness-95"
+//             >
+//               Download PNG
+//             </button>
+
+//             <button
+//               onClick={printQR}
+//               className="bg-gray-700 text-white px-4 py-2 rounded hover:brightness-95"
+//             >
+//               Print
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// src/pages/VisitorManagement.jsx
+import React, { useEffect, useState, useRef } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 
-export default function VisitorQRCode() {
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+export default function VisitorManagement() {
+  const [form, setForm] = useState({ name: "", phone: "", residence: "", prayer_request: "" });
+  const [visitors, setVisitors] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
   const containerRef = useRef(null);
-  // builds the link to the visitor form relative to current origin
+
+  // Fetch visitors from backend
+  const fetchVisitors = async () => {
+    try {
+      const res = await fetch(`${API}/api/visitors`);
+      const data = await res.json();
+      setVisitors(data.map(v => ({ ...v, followedUp: v.follow_up_status !== "pending" })));
+    } catch (err) {
+      console.error("Failed to fetch visitors:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchVisitors();
+  }, []);
+
+  // Handle form input
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // Submit visitor
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch(`${API}/api/visitors`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const newVisitor = await res.json();
+
+      setVisitors([ { ...newVisitor, followedUp: false }, ...visitors ]);
+      setForm({ name: "", phone: "", residence: "", prayer_request: "" });
+      setMessage({ type: "success", text: "Visitor saved successfully!" });
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: "error", text: "Failed to save visitor." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggle follow-up status
+  const toggleFollowUp = async (id) => {
+    const updatedVisitors = visitors.map(v => v.id === id ? { ...v, followedUp: !v.followedUp } : v);
+    setVisitors(updatedVisitors);
+
+    const token=localStorage.getItem("jwt")
+
+    const visitor = updatedVisitors.find(v => v.id === id);
+    try {
+      await fetch(`${API}/api/visitors/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" ,"Authorization":`Bearer ${token}`},
+        body: JSON.stringify({ follow_up_status: visitor.followedUp ? "contacted" : "pending" }),
+      });
+    } catch (err) {
+      console.error("Failed to update follow-up:", err);
+    }
+  };
+
+  // Delete visitor
+  const deleteVisitor = async (id) => {
+
+    const token = localStorage.getItem("jwt");
+    try {
+      await fetch(`${API}/api/visitors/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      setVisitors(visitors.filter(v => v.id !== id));
+    } catch (err) {
+      console.error("Failed to delete visitor:", err);
+    }
+  };
+
+  // Clear all followed visitors
+  const clearFollowed = async () => {
+    const followedIds = visitors.filter(v => v.followedUp).map(v => v.id);
+    try {
+      for (const id of followedIds) await fetch(`${API}/api/visitors/${id}`, { method: "DELETE" });
+      setVisitors(visitors.filter(v => !v.followedUp));
+    } catch (err) {
+      console.error("Failed to clear followed visitors:", err);
+    }
+  };
+
+
+
+
+
+
+
+
+  
+
   const visitorFormUrl = `${window.location.origin}/visitor-form`;
 
-  // download canvas as PNG
-  const downloadPNG = () => {
+  // QR Code utilities
+  const downloadQR = () => {
     const canvas = containerRef.current?.querySelector("canvas");
-    if (!canvas) {
-      alert("QR not ready yet, try again in a moment.");
-      return;
-    }
-    const dataUrl = canvas.toDataURL("image/png");
+    if (!canvas) return alert("QR not ready yet.");
     const a = document.createElement("a");
-    a.href = dataUrl;
+    a.href = canvas.toDataURL("image/png");
     a.download = "visitor-qr.png";
     a.click();
   };
 
-  // open a print-only window containing the QR and auto-print
   const printQR = () => {
     const canvas = containerRef.current?.querySelector("canvas");
-    if (!canvas) {
-      alert("QR not ready yet, try again in a moment.");
-      return;
-    }
+    if (!canvas) return alert("QR not ready yet.");
     const dataUrl = canvas.toDataURL("image/png");
     const w = window.open("", "_blank");
-    if (!w) {
-      alert("Pop-up blocked. Allow pop-ups or use the Download button.");
-      return;
-    }
-
+    if (!w) return alert("Pop-up blocked.");
     w.document.write(`
-      <!doctype html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Print Visitor QR</title>
-          <style>
-            body { font-family: system-ui, sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; color:#111827; }
-            h1 { color:#be185d; } /* pink-600-ish */
-            p { color:#374151; }
-            img { margin-top:12px; max-width:80vw; }
-            a { color:#7c3aed; text-decoration:underline; }
-          </style>
-        </head>
-        <body>
-          <h1>Visitor Registration</h1>
-          <p>Scan this QR or open the link: <a href="${visitorFormUrl}">${visitorFormUrl}</a></p>
-          <img src="${dataUrl}" alt="Visitor QR" />
-          <script>
-            window.onload = function() {
-              setTimeout(() => { window.print(); }, 300);
-              window.onafterprint = function() { window.close(); };
-            }
-          </script>
-        </body>
-      </html>
+      <html><head><title>Print QR</title></head>
+      <body style="display:flex; flex-direction:column; align-items:center; font-family:system-ui;">
+        <h1 style="color:#be185d;">Visitor QR</h1>
+        <img src="${dataUrl}" style="margin-top:12px; max-width:80vw;" />
+        <p>Scan or visit: <a href="${visitorFormUrl}">${visitorFormUrl}</a></p>
+        <script>window.onload=()=>{ setTimeout(()=>window.print(),300); window.onafterprint=()=>window.close(); }</script>
+      </body></html>
     `);
     w.document.close();
   };
 
   return (
-    <div className="min-h-screen bg-gray-500 flex items-center justify-center p-6 pt-20">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center">
-        <h2 className="text-2xl font-bold text-pink-600 mb-4">
-          Visitor QR Code
-        </h2>
-
-        <div
-          ref={containerRef}
-          className="inline-block bg-white p-4 rounded-lg border border-gray-200"
-        >
-          {/* renderAs="canvas" so we can export as PNG */}
-          <QRCodeCanvas value={"http://10.112.153.239:5173/visitor-form"} size={220} />
+    <div className="min-h-screen bg-gray-100 p-6 pt-20 flex gap-6">
+      {/* Left: Visitor Form + Table */}
+      <div className="flex-1 space-y-6">
+        {/* Visitor Form */}
+        <div className="bg-white rounded-2xl shadow p-6">
+          <h2 className="text-2xl font-bold text-pink-600 mb-4">Register Visitor</h2>
+          {message && (
+            <div className={`p-3 rounded mb-4 ${message.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+              {message.text}
+            </div>
+          )}
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <input name="name" value={form.name} onChange={handleChange} placeholder="Full Name" required className="w-full border p-2 rounded" />
+            <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" required className="w-full border p-2 rounded" />
+            <input name="residence" value={form.residence} onChange={handleChange} placeholder="Residence" className="w-full border p-2 rounded" />
+            <textarea name="prayer_request" value={form.prayer_request} onChange={handleChange} placeholder="Prayer Request (optional)" className="w-full border p-2 rounded" />
+            <div className="flex gap-3">
+              <button type="submit" disabled={loading} className="bg-pink-600 text-white px-4 py-2 rounded">{loading ? "Saving..." : "Submit"}</button>
+              <button type="button" onClick={()=>setForm({ name:"", phone:"", residence:"", prayer_request:"" })} className="bg-gray-200 px-4 py-2 rounded">Clear</button>
+            </div>
+          </form>
         </div>
 
-        <p className="text-sm text-gray-600 mt-4">
-          Point visitors to this QR (or copy the link below):
-        </p>
+        {/* Visitor Table */}
+        <div className="bg-white rounded-2xl shadow p-4 overflow-auto">
+          <h2 className="text-xl font-bold text-pink-600 mb-4">Visitors</h2>
+          <button onClick={clearFollowed} className="mb-2 px-3 py-1 bg-pink-600 text-white rounded">Clear Followed Visitors</button>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-pink-100">
+                <th className="border p-2">Followed</th>
+                <th className="border p-2">Name</th>
+                <th className="border p-2">Phone</th>
+                <th className="border p-2">Residence</th>
+                <th className="border p-2">Prayer Request</th>
+                <th className="border p-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visitors.map(v => (
+                <tr key={v.id} className={`${v.followedUp ? "bg-gray-200" : "bg-white"}`}>
+                  <td className="text-center border p-1">
+                    <input type="checkbox" checked={v.followedUp} onChange={()=>toggleFollowUp(v.id)} />
+                  </td>
+                  <td className="border p-2">{v.full_name}</td>
+                  <td className="border p-2">{v.phone}</td>
+                  <td className="border p-2">{v.residence}</td>
+                  <td className="border p-2">{v.prayer_request || "-"}</td>
+                  <td className="border p-2">
+                    <button onClick={()=>deleteVisitor(v.id)} className="text-red-600 px-2">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-        <p className="text-xs text-gray-500 break-words mt-2">
-          {visitorFormUrl}
-        </p>
-
-        <div className="mt-6 flex gap-3 justify-center">
-          <button
-            onClick={downloadPNG}
-            className="bg-pink-600 text-white px-4 py-2 rounded hover:brightness-95"
-          >
-            Download PNG
-          </button>
-
-          <button
-            onClick={printQR}
-            className="bg-gray-700 text-white px-4 py-2 rounded hover:brightness-95"
-          >
-            Print
-          </button>
+      {/* Right: QR Code */}
+      <div ref={containerRef} className="w-80 bg-white rounded-2xl shadow p-6 flex flex-col items-center gap-4">
+        <h2 className="text-xl font-bold text-pink-600">Visitor QR Code</h2>
+        <QRCodeCanvas value={visitorFormUrl} size={220} />
+        <p className="text-sm text-gray-600 break-words text-center">{visitorFormUrl}</p>
+        <div className="flex gap-3">
+          <button onClick={downloadQR} className="bg-pink-600 text-white px-4 py-2 rounded">Download</button>
+          <button onClick={printQR} className="bg-gray-700 text-white px-4 py-2 rounded">Print</button>
         </div>
       </div>
     </div>

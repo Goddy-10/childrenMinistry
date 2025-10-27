@@ -14,7 +14,7 @@ import Timetable from "./pages/Timetable";
 import Adults from "./pages/Adults";
 import ChildrenMinistry from "./pages/ChildrenMinistry";
 import VisitorQRCode from "./pages/VisitorQrCode";
-import VisitorForm from "./pages/VisitorForm";
+
 import Gallery from "./pages/Gallery";
 import ProgramsTab from "./components/ProgramsTab";
 import Events from "./pages/Events";
@@ -69,7 +69,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/visitor-form" element={<VisitorForm />} />
+            
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/events" element={<Events />} />
 
