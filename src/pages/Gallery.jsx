@@ -1,37 +1,40 @@
 
 
 
-
-
-
-
-
 // // src/pages/Gallery.jsx
 // import { useState, useEffect } from "react";
-// import { useAuth } from "../context/AuthContext"; // adjust path if your context is elsewhere
+// import { useAuth } from "../context/AuthContext";
 
 // export default function Gallery() {
 //   const { user, token } = useAuth();
-//   const [activeTab, setActiveTab] = useState("photos"); // photos | videos
+//   const [activeTab, setActiveTab] = useState("photos");
 //   const [media, setMedia] = useState([]);
 //   const [file, setFile] = useState(null);
 //   const [description, setDescription] = useState("");
 //   const [loading, setLoading] = useState(false);
 
-//   // Fetch gallery items from backend
+//   // Fetch media (photos/videos)
+//   const fetchMedia = async () => {
+//     try {
+//       const res = await fetch(`/api/media/${activeTab}`, {
+//         headers: token
+//           ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
+//           : { "Content-Type": "application/json" },
+//       });
+
+//       if (!res.ok) throw new Error("Failed to fetch gallery");
+
+//       const data = await res.json();
+//       setMedia(data);
+//     } catch (err) {
+//       console.error("Gallery fetch error:", err);
+//     }
+//   };
+
+//   // Auto fetch when tab or token changes
 //   useEffect(() => {
-//     const fetchMedia = async () => {
-//       try {
-//         const res = await fetch(`/api/gallery/${activeTab}`);
-//         if (!res.ok) throw new Error("Failed to fetch gallery");
-//         const data = await res.json();
-//         setMedia(data);
-//       } catch (err) {
-//         console.error("Gallery fetch error:", err);
-//       }
-//     };
 //     fetchMedia();
-//   }, [activeTab]);
+//   }, [activeTab, token]);
 
 //   // Upload media (admin only)
 //   const handleUpload = async (e) => {
@@ -53,7 +56,7 @@
 //       const res = await fetch("/api/gallery/upload", {
 //         method: "POST",
 //         headers: {
-//           Authorization: `Bearer ${token}`, // send JWT
+//           Authorization: `Bearer ${token}`,
 //         },
 //         body: formData,
 //       });
@@ -63,15 +66,41 @@
 //         throw new Error(errData.error || "Upload failed");
 //       }
 
-//       const newMedia = await res.json();
-//       setMedia((prev) => [newMedia, ...prev]);
 //       setFile(null);
 //       setDescription("");
+//       await fetchMedia(); // refresh after upload
 //     } catch (err) {
 //       console.error("Gallery upload error:", err);
 //       alert(err.message);
 //     } finally {
 //       setLoading(false);
+//     }
+//   };
+
+//   // Delete media (admin only)
+//   const handleDelete = async (id) => {
+//     if (!user || user.role !== "admin") {
+//       alert("Only admins can delete media.");
+//       return;
+//     }
+
+//     if (!window.confirm("Are you sure you want to delete this media?")) return;
+
+//     try {
+//       const res = await fetch(`/api/gallery/delete/${id}`, {
+//         method: "DELETE",
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+
+//       if (!res.ok) {
+//         const errData = await res.json();
+//         throw new Error(errData.error || "Failed to delete media");
+//       }
+
+//       await fetchMedia(); // refresh after delete
+//     } catch (err) {
+//       console.error("Delete error:", err);
+//       alert(err.message);
 //     }
 //   };
 
@@ -145,7 +174,7 @@
 //             {media.map((item) => (
 //               <div
 //                 key={item.id}
-//                 className="bg-gray-100 rounded-lg overflow-hidden shadow"
+//                 className="bg-gray-100 rounded-lg overflow-hidden shadow relative"
 //               >
 //                 {activeTab === "photos" ? (
 //                   <img
@@ -163,6 +192,17 @@
 //                 <div className="p-3 text-sm text-gray-700">
 //                   {item.description}
 //                 </div>
+
+//                 {/* Delete button (admin only) */}
+//                 {user?.role === "admin" && (
+//                   <button
+//                     onClick={() => handleDelete(item.id)}
+//                     className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-700 transition"
+//                     title="Delete media"
+//                   >
+//                     ✕
+//                   </button>
+//                 )}
 //               </div>
 //             ))}
 //           </div>
@@ -182,49 +222,38 @@
 
 
 
-
-
-
-
-
-
 // src/pages/Gallery.jsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Gallery() {
   const { user, token } = useAuth();
-  const [activeTab, setActiveTab] = useState("photos"); // photos | videos
+  const [activeTab, setActiveTab] = useState("photos");
   const [media, setMedia] = useState([]);
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Fetch gallery items from backend
+  // Fetch media (photos/videos)
+  const fetchMedia = async () => {
+    try {
+      const res = await fetch(`/api/media/${activeTab}`, {
+        headers: token
+          ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
+          : { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch gallery");
+
+      const data = await res.json();
+      setMedia(data);
+    } catch (err) {
+      console.error("Gallery fetch error:", err);
+    }
+  };
+
+  // Auto fetch when tab or token changes
   useEffect(() => {
-    if (!token) return; // wait until token exists
-
-    const fetchMedia = async () => {
-      try {
-        const res = await fetch(`/api/gallery/${activeTab}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || "Failed to fetch gallery");
-        }
-
-        const data = await res.json();
-        setMedia(data);
-      } catch (err) {
-        console.error("Gallery fetch error:", err);
-      }
-    };
-
     fetchMedia();
   }, [activeTab, token]);
 
@@ -248,7 +277,7 @@ export default function Gallery() {
       const res = await fetch("/api/gallery/upload", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`, // send JWT
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
@@ -258,15 +287,66 @@ export default function Gallery() {
         throw new Error(errData.error || "Upload failed");
       }
 
-      const newMedia = await res.json();
-      setMedia((prev) => [newMedia, ...prev]);
       setFile(null);
       setDescription("");
+      await fetchMedia(); // refresh after upload
     } catch (err) {
       console.error("Gallery upload error:", err);
       alert(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Delete media (admin only)
+  const handleDelete = async (id) => {
+    if (!user || user.role !== "admin") {
+      alert("Only admins can delete media.");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this media?")) return;
+
+    try {
+      const res = await fetch(`/api/gallery/delete/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to delete media");
+      }
+
+      await fetchMedia(); // refresh after delete
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert(err.message);
+    }
+  };
+
+  // Toggle Featured (add/remove from homepage slideshow)
+  const handleToggleFeatured = async (id) => {
+    if (!user || user.role !== "admin") {
+      alert("Only admins can feature media.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/media/${id}/toggle-featured`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to update featured status");
+      }
+
+      await fetchMedia(); // refresh after toggle
+    } catch (err) {
+      console.error("Toggle featured error:", err);
+      alert(err.message);
     }
   };
 
@@ -340,7 +420,7 @@ export default function Gallery() {
             {media.map((item) => (
               <div
                 key={item.id}
-                className="bg-gray-100 rounded-lg overflow-hidden shadow"
+                className="bg-gray-100 rounded-lg overflow-hidden shadow relative"
               >
                 {activeTab === "photos" ? (
                   <img
@@ -358,6 +438,36 @@ export default function Gallery() {
                 <div className="p-3 text-sm text-gray-700">
                   {item.description}
                 </div>
+
+                {/* Admin Controls */}
+                {user?.role === "admin" && (
+                  <div className="absolute top-2 right-2 flex flex-col gap-2">
+                    {/* Delete */}
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-700 transition"
+                      title="Delete media"
+                    >
+                      ✕
+                    </button>
+                    {/* Toggle Featured */}
+                    <button
+                      onClick={() => handleToggleFeatured(item.id)}
+                      className={`text-xs px-2 py-1 rounded-lg ${
+                        item.is_featured
+                          ? "bg-yellow-400 text-gray-900"
+                          : "bg-blue-600 text-white hover:bg-blue-700"
+                      }`}
+                      title={
+                        item.is_featured
+                          ? "Remove from homepage"
+                          : "Add to homepage slideshow"
+                      }
+                    >
+                      {item.is_featured ? "★ Featured" : "☆ Add"}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -366,3 +476,5 @@ export default function Gallery() {
     </div>
   );
 }
+
+

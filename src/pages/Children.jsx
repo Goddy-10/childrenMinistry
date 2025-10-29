@@ -1,7 +1,603 @@
+// import { useEffect, useMemo, useState } from "react";
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
+
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@/components/ui/dialog";
+// import {
+//   AlertDialog,
+//   AlertDialogAction,
+//   AlertDialogCancel,
+//   AlertDialogContent,
+//   AlertDialogFooter,
+//   AlertDialogHeader,
+//   AlertDialogTitle,
+//   AlertDialogTrigger,
+// } from "@/components/ui/alert-dialog";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+// // import { toast } from "@/components/ui/toast";
+// import { Loader2, Edit, Trash, Download, Printer, Plus } from "lucide-react";
+
+// // If you prefer env: const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// const API = "http://localhost:5000"; // adjust later to VITE_API_URL
+
+// const CLASS_OPTIONS = [
+//   { id: "all", label: "All Classes" },
+//   { id: "Gifted Brains", label: "Gifted Brains (0–3)" },
+//   { id: "Beginners", label: "Beginners (3–6)" },
+//   { id: "Shinners", label: "Shinners (6–9)" },
+//   { id: "Conquerors", label: "Conquerors (9–13)" },
+//   { id: "Teens", label: "Teens (13+)" },
+// ];
+
+// // Fallback mapping if backend hasn’t assigned class yet
+// function getClassForAge(age) {
+//   const a = Number(age);
+//   if (isNaN(a)) return "";
+//   if (a < 3) return "Gifted Brains";
+//   if (a < 6) return "Beginners";
+//   if (a < 9) return "Shinners";
+//   if (a < 13) return "Conquerors";
+//   return "Teens";
+// }
+
+// export default function Children() {
+// //   const { toast } = useToast();
+
+//   // list state
+//   const [children, setChildren] = useState([]);
+//   const [loading, setLoading] = useState(false);
+
+//   // search / filter / pagination
+//   const [search, setSearch] = useState("");
+//   const [classFilter, setClassFilter] = useState("all");
+//   const [page, setPage] = useState(1);
+//   const [totalPages, setTotalPages] = useState(1);
+
+//   // modal : add/edit
+//   const [openAdd, setOpenAdd] = useState(false);
+//   const [openEdit, setOpenEdit] = useState(false);
+//   const [saving, setSaving] = useState(false);
+//   const [deletingId, setDeletingId] = useState(null);
+
+//   // form state (shared by add/edit)
+//   const blankForm = { name: "", age: "", gender: "", parent: "", contact: "" };
+//   const [form, setForm] = useState(blankForm);
+//   const [editingId, setEditingId] = useState(null);
+
+//   // Fetch children from backend (supports search + pagination)
+//   const fetchChildren = async () => {
+//     setLoading(true);
+//     try {
+//       const params = new URLSearchParams({
+//         search,
+//         page: String(page),
+//         class: classFilter === "all" ? "" : classFilter,
+//       });
+//       const res = await fetch(`${API}/children?${params.toString()}`);
+//       if (!res.ok) throw new Error("Failed to fetch children");
+//       const data = await res.json();
+//       // Expecting { items, total_pages } from backend
+//       setChildren(data.items || []);
+//       setTotalPages(data.total_pages || 1);
+//     } catch (err) {
+//       toast({
+//         title: "Error",
+//         description: err.message,
+//         variant: "destructive",
+//       });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchChildren();
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [search, page, classFilter]);
+
+//   // Derived, just in case the backend doesn’t send class
+//   const displayChildren = useMemo(() => {
+//     return children.map((c) => ({
+//       ...c,
+//       className: c.className || getClassForAge(c.age),
+//     }));
+//   }, [children]);
+
+//   // ADD
+//   const handleAdd = async (e) => {
+//     e.preventDefault();
+//     setSaving(true);
+//     try {
+//       const res = await fetch(`${API}/children`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(form),
+//       });
+//       if (!res.ok) throw new Error("Failed to add child");
+//     //   toast({ title: "Success", description: "Child added successfully!" });
+//       setForm(blankForm);
+//       setOpenAdd(false);
+//       // refresh
+//       fetchChildren();
+//     } catch (err) {
+//     //   toast({
+//     //     title: "Error",
+//     //     description: err.message,
+//     //     variant: "destructive",
+//     //   });
+//     } finally {
+//       setSaving(false);
+//     }
+//   };
+
+//   // OPEN EDIT
+//   const openEditModal = (child) => {
+//     setEditingId(child.id);
+//     setForm({
+//       name: child.name ?? "",
+//       age: child.age ?? "",
+//       gender: child.gender ?? "",
+//       parent: child.parent ?? child.guardian ?? "",
+//       contact: child.contact ?? "",
+//     });
+//     setOpenEdit(true);
+//   };
+
+//   // SAVE EDIT
+//   const handleEditSave = async (e) => {
+//     e.preventDefault();
+//     setSaving(true);
+//     try {
+//       const res = await fetch(`${API}/children/${editingId}`, {
+//         method: "PUT",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(form),
+//       });
+//       if (!res.ok) throw new Error("Failed to update child");
+//     //   toast({ title: "Updated", description: "Child updated successfully." });
+//       setOpenEdit(false);
+//       setEditingId(null);
+//       setForm(blankForm);
+//       fetchChildren();
+//     } catch (err) {
+//     //   toast({
+//     //     title: "Error",
+//     //     description: err.message,
+//     //     variant: "destructive",
+//     //   });
+//     } finally {
+//       setSaving(false);
+//     }
+//   };
+
+//   // DELETE
+//   const confirmDelete = async () => {
+//     if (!deletingId) return;
+//     try {
+//       const res = await fetch(`${API}/children/${deletingId}`, {
+//         method: "DELETE",
+//       });
+//       if (!res.ok) throw new Error("Failed to delete child");
+//     //   toast({ title: "Deleted", description: "Child removed successfully." });
+//       setDeletingId(null);
+//       fetchChildren();
+//     } catch (err) {
+//     //   toast({
+//     //     title: "Error",
+//     //     description: err.message,
+//     //     variant: "destructive",
+//     //   });
+//     }
+//   };
+
+//   // EXPORT CSV for current class filter (or all)
+//   const handleDownloadCSV = () => {
+//     const rows = displayChildren
+//       .filter(
+//         (c) => classFilter === "all" || (c.className || "") === classFilter
+//       )
+//       .map((c) => ({
+//         Name: c.name,
+//         Age: c.age,
+//         Gender: c.gender,
+//         Class: c.className,
+//         Parent: c.parent || c.guardian || "",
+//         Contact: c.contact || "",
+//       }));
+
+//     const header = Object.keys(
+//       rows[0] || {
+//         Name: "",
+//         Age: "",
+//         Gender: "",
+//         Class: "",
+//         Parent: "",
+//         Contact: "",
+//       }
+//     );
+//     const csv = [
+//       header.join(","),
+//       ...rows.map((r) =>
+//         header
+//           .map((key) => {
+//             const val = (r[key] ?? "").toString().replace(/"/g, '""');
+//             return `"${val}"`;
+//           })
+//           .join(",")
+//       ),
+//     ].join("\n");
+
+//     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+//     const url = URL.createObjectURL(blob);
+//     const a = document.createElement("a");
+//     const label =
+//       classFilter === "all"
+//         ? "all-classes"
+//         : classFilter.replace(/\s+/g, "-").toLowerCase();
+//     a.href = url;
+//     a.download = `children-${label}.csv`;
+//     a.click();
+//     URL.revokeObjectURL(url);
+//   };
+
+//   // PRINT current class filter (or all)
+//   const handlePrint = () => {
+//     const rows = displayChildren.filter(
+//       (c) => classFilter === "all" || (c.className || "") === classFilter
+//     );
+
+//     const win = window.open("", "_blank");
+//     if (!win) return;
+
+//     const title =
+//       classFilter === "all" ? "All Classes" : `${classFilter} Class`;
+
+//     win.document.write(`
+//       <html>
+//         <head>
+//           <title>Children - ${title}</title>
+//           <style>
+//             body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 16px; }
+//             h1 { color: #7e22ce; } /* purple-800 */
+//             table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+//             th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+//             th { background: #f3f4f6; } /* gray-100 */
+//             tr:nth-child(even) { background: #fafafa; }
+//           </style>
+//         </head>
+//         <body>
+//           <h1>Children – ${title}</h1>
+//           <table>
+//             <thead>
+//               <tr>
+//                 <th>Name</th><th>Age</th><th>Gender</th><th>Class</th><th>Parent</th><th>Contact</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               ${rows
+//                 .map(
+//                   (c) => `<tr>
+//                     <td>${c.name ?? ""}</td>
+//                     <td>${c.age ?? ""}</td>
+//                     <td>${c.gender ?? ""}</td>
+//                     <td>${c.className ?? ""}</td>
+//                     <td>${c.parent ?? c.guardian ?? ""}</td>
+//                     <td>${c.contact ?? ""}</td>
+//                   </tr>`
+//                 )
+//                 .join("")}
+//             </tbody>
+//           </table>
+//         </body>
+//       </html>
+//     `);
+//     win.document.close();
+//     win.focus();
+//     win.print();
+//   };
+
+//   return (
+//     <div className="p-6 min-h-screen bg-gray-100 space-y-6">
+//       {/* Page Title + Actions */}
+//       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+//         <h1 className="text-2xl font-bold text-pink-600">Children</h1>
+
+//         <div className="flex flex-wrap items-center gap-2">
+//           {/* Class Filter */}
+//           <Select value={classFilter} onValueChange={setClassFilter}>
+//             <SelectTrigger className="w-56 border-purple-300">
+//               <SelectValue placeholder="Filter by class" />
+//             </SelectTrigger>
+//             <SelectContent>
+//               {CLASS_OPTIONS.map((opt) => (
+//                 <SelectItem key={opt.id} value={opt.id}>
+//                   {opt.label}
+//                 </SelectItem>
+//               ))}
+//             </SelectContent>
+//           </Select>
+
+//           {/* Export & Print */}
+//           <Button
+//             variant="outline"
+//             className="border-pink-600 text-pink-600"
+//             onClick={handleDownloadCSV}
+//           >
+//             <Download className="w-4 h-4 mr-2 bg-pink-600 hover:bg-purple-700 text-white" />
+//             Download CSV
+//           </Button>
+//           <Button
+//             variant="outline"
+//             className="border-pink-600 text-pink-600"
+//             onClick={handlePrint}
+//           >
+//             <Printer className="w-4 h-4 mr-2 bg-pink-600 hover:bg-purple-700 text-white" />
+//             Print
+//           </Button>
+
+//           {/* Add Child (Dialog) */}
+//           <Dialog open={openAdd} onOpenChange={setOpenAdd}>
+//             <DialogTrigger asChild>
+//               <Button className="bg-pink-600 hover:bg-purple-700 text-white">
+//                 <Plus className="w-4 h-4 mr-2" />
+//                 Add Child
+//               </Button>
+//             </DialogTrigger>
+//             <DialogContent>
+//               <DialogHeader>
+//                 <DialogTitle>Add Child</DialogTitle>
+//               </DialogHeader>
+//               <form onSubmit={handleAdd} className="grid gap-3">
+//                 <Input
+//                   placeholder="Name"
+//                   value={form.name}
+//                   onChange={(e) => setForm({ ...form, name: e.target.value })}
+//                   required
+//                 />
+//                 <Input
+//                   type="number"
+//                   placeholder="Age"
+//                   value={form.age}
+//                   onChange={(e) => setForm({ ...form, age: e.target.value })}
+//                   required
+//                 />
+//                 <Select
+//                   value={form.gender}
+//                   onValueChange={(v) => setForm({ ...form, gender: v })}
+//                 >
+//                   <SelectTrigger>
+//                     <SelectValue placeholder="Gender" />
+//                   </SelectTrigger>
+//                   <SelectContent>
+//                     <SelectItem value="Male">Male</SelectItem>
+//                     <SelectItem value="Female">Female</SelectItem>
+//                   </SelectContent>
+//                 </Select>
+//                 <Input
+//                   placeholder="Parent/Guardian"
+//                   value={form.parent}
+//                   onChange={(e) => setForm({ ...form, parent: e.target.value })}
+//                   required
+//                 />
+//                 <Input
+//                   placeholder="Contact"
+//                   value={form.contact}
+//                   onChange={(e) =>
+//                     setForm({ ...form, contact: e.target.value })
+//                   }
+//                   required
+//                 />
+//                 <Button
+//                   type="submit"
+//                   className="bg-purple-600 hover:bg-purple-700 text-white"
+//                   disabled={saving}
+//                 >
+//                   {saving ? (
+//                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                   ) : null}
+//                   Save Child
+//                 </Button>
+//               </form>
+//             </DialogContent>
+//           </Dialog>
+//         </div>
+//       </div>
+
+//       {/* Search */}
+//       <div className="flex items-center gap-2">
+//         <Input
+//           placeholder="Search by name..."
+//           value={search}
+//           onChange={(e) => {
+//             setPage(1);
+//             setSearch(e.target.value);
+//           }}
+//           className="w-full md:w-80 border-purple-300"
+//         />
+//         {loading && (
+//           <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
+//         )}
+//       </div>
+
+//       {/* List */}
+//       <div className="space-y-3">
+//         {displayChildren.length === 0 && !loading ? (
+//           <p className="text-gray-600">No children found.</p>
+//         ) : (
+//           displayChildren.map((child) => (
+//             <div
+//               key={child.id}
+//               className="flex items-center justify-between bg-white rounded-xl border border-purple-200 p-4"
+//             >
+//               <div>
+//                 <p className="font-semibold text-purple-700">{child.name}</p>
+//                 <p className="text-sm text-gray-600">
+//                   Age: {child.age} | Gender: {child.gender} | Class:{" "}
+//                   {child.className || "-"}
+//                 </p>
+//                 <p className="text-sm text-gray-600">
+//                   Parent: {child.parent || child.guardian || "-"} | Contact:{" "}
+//                   {child.contact || "-"}
+//                 </p>
+//               </div>
+//               <div className="flex items-center gap-2">
+//                 <Button
+//                   variant="outline"
+//                   className="border-purple-300 text-purple-700"
+//                   onClick={() => openEditModal(child)}
+//                 >
+//                   <Edit className="w-4 h-4 mr-2" />
+//                   Edit
+//                 </Button>
+
+//                 <AlertDialog>
+//                   <AlertDialogTrigger asChild>
+//                     <Button
+//                       variant="outline"
+//                       className="border-red-300 text-red-600"
+//                       onClick={() => setDeletingId(child.id)}
+//                     >
+//                       <Trash className="w-4 h-4 mr-2" />
+//                       Delete
+//                     </Button>
+//                   </AlertDialogTrigger>
+//                   <AlertDialogContent>
+//                     <AlertDialogHeader>
+//                       <AlertDialogTitle>Delete {child.name}?</AlertDialogTitle>
+//                     </AlertDialogHeader>
+//                     <AlertDialogFooter>
+//                       <AlertDialogCancel onClick={() => setDeletingId(null)}>
+//                         Cancel
+//                       </AlertDialogCancel>
+//                       <AlertDialogAction onClick={confirmDelete}>
+//                         Yes, Delete
+//                       </AlertDialogAction>
+//                     </AlertDialogFooter>
+//                   </AlertDialogContent>
+//                 </AlertDialog>
+//               </div>
+//             </div>
+//           ))
+//         )}
+//       </div>
+
+//       {/* Pagination */}
+//       <div className="flex justify-center items-center gap-3 pt-2">
+//         <Button
+//           variant="outline"
+//           className="border-purple-300 bg-pink-600 hover:bg-purple-700 text-white"
+//           disabled={page <= 1}
+//           onClick={() => setPage((p) => p - 1)}
+//         >
+//           Previous
+//         </Button>
+//         <span className="text-gray-700">
+//           Page {page} of {totalPages}
+//         </span>
+//         <Button
+//           variant="outline"
+//           className="border-purple-300 bg-pink-600 hover:bg-purple-700 text-white"
+//           disabled={page >= totalPages}
+//           onClick={() => setPage((p) => p + 1)}
+//         >
+//           Next
+//         </Button>
+//       </div>
+
+//       {/* Edit Modal */}
+//       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+//         <DialogContent>
+//           <DialogHeader>
+//             <DialogTitle>Edit Child</DialogTitle>
+//           </DialogHeader>
+//           <form onSubmit={handleEditSave} className="grid gap-3">
+//             <Input
+//               placeholder="Name"
+//               value={form.name}
+//               onChange={(e) => setForm({ ...form, name: e.target.value })}
+//               required
+//             />
+//             <Input
+//               type="number"
+//               placeholder="Age"
+//               value={form.age}
+//               onChange={(e) => setForm({ ...form, age: e.target.value })}
+//               required
+//             />
+//             <Select
+//               value={form.gender}
+//               onValueChange={(v) => setForm({ ...form, gender: v })}
+//             >
+//               <SelectTrigger>
+//                 <SelectValue placeholder="Gender" />
+//               </SelectTrigger>
+//               <SelectContent>
+//                 <SelectItem value="Male">Male</SelectItem>
+//                 <SelectItem value="Female">Female</SelectItem>
+//               </SelectContent>
+//             </Select>
+//             <Input
+//               placeholder="Parent/Guardian"
+//               value={form.parent}
+//               onChange={(e) => setForm({ ...form, parent: e.target.value })}
+//               required
+//             />
+//             <Input
+//               placeholder="Contact"
+//               value={form.contact}
+//               onChange={(e) => setForm({ ...form, contact: e.target.value })}
+//               required
+//             />
+//             <div className="flex gap-2 justify-end">
+//               <Button
+//                 type="button"
+//                 variant="outline"
+//                 onClick={() => setOpenEdit(false)}
+//               >
+//                 Cancel
+//               </Button>
+//               <Button
+//                 type="submit"
+//                 className="bg-purple-600 hover:bg-purple-700 text-white"
+//                 disabled={saving}
+//               >
+//                 {saving ? (
+//                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                 ) : null}
+//                 Save Changes
+//               </Button>
+//             </div>
+//           </form>
+//         </DialogContent>
+//       </Dialog>
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+
+
+
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import { Loader2, Edit, Trash, Download, Printer, Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,18 +615,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-// import { toast } from "@/components/ui/toast";
-import { Loader2, Edit, Trash, Download, Printer, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// If you prefer env: const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
-const API = "http://localhost:5000"; // adjust later to VITE_API_URL
+// DOCX and PDF
+import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun } from "docx";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+
+// Backend API
+const API = "http://localhost:5000"; // later replace with env variable
 
 const CLASS_OPTIONS = [
   { id: "all", label: "All Classes" },
@@ -41,7 +633,6 @@ const CLASS_OPTIONS = [
   { id: "Teens", label: "Teens (13+)" },
 ];
 
-// Fallback mapping if backend hasn’t assigned class yet
 function getClassForAge(age) {
   const a = Number(age);
   if (isNaN(a)) return "";
@@ -52,31 +643,37 @@ function getClassForAge(age) {
   return "Teens";
 }
 
-export default function Children() {
-//   const { toast } = useToast();
-
-  // list state
+export default function Children({ role = "teacher" }) {
+  // List
   const [children, setChildren] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // search / filter / pagination
+  // Search & filter
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // modal : add/edit
+  // Modals
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
-  // form state (shared by add/edit)
-  const blankForm = { name: "", age: "", gender: "", parent: "", contact: "" };
+  // Form
+  const blankForm = {
+    name: "",
+    age: "",
+    gender: "",
+    parent: "",
+    contact: "",
+    attendance: false,
+    offering: 0,
+  };
   const [form, setForm] = useState(blankForm);
   const [editingId, setEditingId] = useState(null);
 
-  // Fetch children from backend (supports search + pagination)
+  // Fetch children
   const fetchChildren = async () => {
     setLoading(true);
     try {
@@ -88,15 +685,10 @@ export default function Children() {
       const res = await fetch(`${API}/children?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch children");
       const data = await res.json();
-      // Expecting { items, total_pages } from backend
       setChildren(data.items || []);
       setTotalPages(data.total_pages || 1);
     } catch (err) {
-      toast({
-        title: "Error",
-        description: err.message,
-        variant: "destructive",
-      });
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -104,10 +696,8 @@ export default function Children() {
 
   useEffect(() => {
     fetchChildren();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, page, classFilter]);
 
-  // Derived, just in case the backend doesn’t send class
   const displayChildren = useMemo(() => {
     return children.map((c) => ({
       ...c,
@@ -126,17 +716,11 @@ export default function Children() {
         body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error("Failed to add child");
-    //   toast({ title: "Success", description: "Child added successfully!" });
       setForm(blankForm);
       setOpenAdd(false);
-      // refresh
       fetchChildren();
     } catch (err) {
-    //   toast({
-    //     title: "Error",
-    //     description: err.message,
-    //     variant: "destructive",
-    //   });
+      console.error(err);
     } finally {
       setSaving(false);
     }
@@ -151,6 +735,8 @@ export default function Children() {
       gender: child.gender ?? "",
       parent: child.parent ?? child.guardian ?? "",
       contact: child.contact ?? "",
+      attendance: child.attendance ?? false,
+      offering: child.offering ?? 0,
     });
     setOpenEdit(true);
   };
@@ -166,17 +752,12 @@ export default function Children() {
         body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error("Failed to update child");
-    //   toast({ title: "Updated", description: "Child updated successfully." });
       setOpenEdit(false);
       setEditingId(null);
       setForm(blankForm);
       fetchChildren();
     } catch (err) {
-    //   toast({
-    //     title: "Error",
-    //     description: err.message,
-    //     variant: "destructive",
-    //   });
+      console.error(err);
     } finally {
       setSaving(false);
     }
@@ -190,132 +771,123 @@ export default function Children() {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete child");
-    //   toast({ title: "Deleted", description: "Child removed successfully." });
       setDeletingId(null);
       fetchChildren();
     } catch (err) {
-    //   toast({
-    //     title: "Error",
-    //     description: err.message,
-    //     variant: "destructive",
-    //   });
+      console.error(err);
     }
   };
 
-  // EXPORT CSV for current class filter (or all)
-  const handleDownloadCSV = () => {
-    const rows = displayChildren
-      .filter(
-        (c) => classFilter === "all" || (c.className || "") === classFilter
-      )
-      .map((c) => ({
-        Name: c.name,
-        Age: c.age,
-        Gender: c.gender,
-        Class: c.className,
-        Parent: c.parent || c.guardian || "",
-        Contact: c.contact || "",
-      }));
+  // KPI calculations
+  const today = new Date().toISOString().split("T")[0];
+  const todaysAttendance = displayChildren.filter(
+    (c) => c.attendance && c.date === today
+  ).length;
+  const todaysOffering = displayChildren.reduce(
+    (sum, c) => sum + Number(c.offering || 0),
+    0
+  );
+  const month = new Date().getMonth();
+  const monthlyAttendance = displayChildren.filter((c) => {
+    const d = new Date(c.date);
+    return c.attendance && d.getMonth() === month;
+  }).length;
+  const monthlyOffering = displayChildren.reduce((sum, c) => {
+    const d = new Date(c.date);
+    return d.getMonth() === month ? sum + Number(c.offering || 0) : sum;
+  }, 0);
 
-    const header = Object.keys(
-      rows[0] || {
-        Name: "",
-        Age: "",
-        Gender: "",
-        Class: "",
-        Parent: "",
-        Contact: "",
-      }
-    );
-    const csv = [
-      header.join(","),
-      ...rows.map((r) =>
-        header
-          .map((key) => {
-            const val = (r[key] ?? "").toString().replace(/"/g, '""');
-            return `"${val}"`;
-          })
-          .join(",")
-      ),
-    ].join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  // EXPORT DOCX
+  const handleDownloadDocx = async () => {
+    const doc = new Document({
+      sections: [
+        {
+          children: [
+            new Paragraph({ text: "Children List", heading: "Heading1" }),
+            new Table({
+              rows: [
+                new TableRow({
+                  children: [
+                    "Name",
+                    "Age",
+                    "Gender",
+                    "Class",
+                    "Parent",
+                    "Contact",
+                    "Attendance",
+                    "Offering",
+                  ].map((h) => new TableCell({ children: [new Paragraph(h)] })),
+                }),
+                ...displayChildren.map(
+                  (c) =>
+                    new TableRow({
+                      children: [
+                        c.name,
+                        c.age,
+                        c.gender,
+                        c.className,
+                        c.parent,
+                        c.contact,
+                        c.attendance ? "✔" : "✘",
+                        c.offering,
+                      ].map(
+                        (d) =>
+                          new TableCell({
+                            children: [new Paragraph(d.toString())],
+                          })
+                      ),
+                    })
+                ),
+              ],
+            }),
+          ],
+        },
+      ],
+    });
+    const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    const label =
-      classFilter === "all"
-        ? "all-classes"
-        : classFilter.replace(/\s+/g, "-").toLowerCase();
     a.href = url;
-    a.download = `children-${label}.csv`;
+    a.download = "children.docx";
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  // PRINT current class filter (or all)
-  const handlePrint = () => {
-    const rows = displayChildren.filter(
-      (c) => classFilter === "all" || (c.className || "") === classFilter
-    );
+  // EXPORT PDF
+  const handleDownloadPDF = async () => {
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([800, 600]);
+    const { width, height } = page.getSize();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontSize = 12;
+    let y = height - 40;
 
-    const win = window.open("", "_blank");
-    if (!win) return;
+    page.drawText("Children List", { x: 50, y, size: 18, font });
+    y -= 25;
+    displayChildren.forEach((c) => {
+      const line = `${c.name} | ${c.age} | ${c.gender} | ${c.className} | ${
+        c.parent
+      } | ${c.contact} | ${c.attendance ? "✔" : "✘"} | ${c.offering}`;
+      page.drawText(line, { x: 50, y, size: fontSize, font });
+      y -= 20;
+    });
 
-    const title =
-      classFilter === "all" ? "All Classes" : `${classFilter} Class`;
-
-    win.document.write(`
-      <html>
-        <head>
-          <title>Children - ${title}</title>
-          <style>
-            body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 16px; }
-            h1 { color: #7e22ce; } /* purple-800 */
-            table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-            th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
-            th { background: #f3f4f6; } /* gray-100 */
-            tr:nth-child(even) { background: #fafafa; }
-          </style>
-        </head>
-        <body>
-          <h1>Children – ${title}</h1>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th><th>Age</th><th>Gender</th><th>Class</th><th>Parent</th><th>Contact</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows
-                .map(
-                  (c) => `<tr>
-                    <td>${c.name ?? ""}</td>
-                    <td>${c.age ?? ""}</td>
-                    <td>${c.gender ?? ""}</td>
-                    <td>${c.className ?? ""}</td>
-                    <td>${c.parent ?? c.guardian ?? ""}</td>
-                    <td>${c.contact ?? ""}</td>
-                  </tr>`
-                )
-                .join("")}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `);
-    win.document.close();
-    win.focus();
-    win.print();
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "children.pdf";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
     <div className="p-6 min-h-screen bg-gray-100 space-y-6">
-      {/* Page Title + Actions */}
+      {/* Title + Actions */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <h1 className="text-2xl font-bold text-pink-600">Children</h1>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Class Filter */}
+        <div className="flex flex-wrap gap-2">
           <Select value={classFilter} onValueChange={setClassFilter}>
             <SelectTrigger className="w-56 border-purple-300">
               <SelectValue placeholder="Filter by class" />
@@ -328,90 +900,26 @@ export default function Children() {
               ))}
             </SelectContent>
           </Select>
-
-          {/* Export & Print */}
           <Button
             variant="outline"
             className="border-pink-600 text-pink-600"
-            onClick={handleDownloadCSV}
+            onClick={handleDownloadDocx}
           >
-            <Download className="w-4 h-4 mr-2 bg-pink-600 hover:bg-purple-700 text-white" />
-            Download CSV
+            <Download className="w-4 h-4 mr-2" /> DOCX
           </Button>
           <Button
             variant="outline"
             className="border-pink-600 text-pink-600"
-            onClick={handlePrint}
+            onClick={handleDownloadPDF}
           >
-            <Printer className="w-4 h-4 mr-2 bg-pink-600 hover:bg-purple-700 text-white" />
-            Print
+            <Printer className="w-4 h-4 mr-2" /> PDF
           </Button>
-
-          {/* Add Child (Dialog) */}
-          <Dialog open={openAdd} onOpenChange={setOpenAdd}>
-            <DialogTrigger asChild>
-              <Button className="bg-pink-600 hover:bg-purple-700 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Child
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Child</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleAdd} className="grid gap-3">
-                <Input
-                  placeholder="Name"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  required
-                />
-                <Input
-                  type="number"
-                  placeholder="Age"
-                  value={form.age}
-                  onChange={(e) => setForm({ ...form, age: e.target.value })}
-                  required
-                />
-                <Select
-                  value={form.gender}
-                  onValueChange={(v) => setForm({ ...form, gender: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Input
-                  placeholder="Parent/Guardian"
-                  value={form.parent}
-                  onChange={(e) => setForm({ ...form, parent: e.target.value })}
-                  required
-                />
-                <Input
-                  placeholder="Contact"
-                  value={form.contact}
-                  onChange={(e) =>
-                    setForm({ ...form, contact: e.target.value })
-                  }
-                  required
-                />
-                <Button
-                  type="submit"
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : null}
-                  Save Child
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <Button
+            className="bg-pink-600 hover:bg-purple-700 text-white"
+            onClick={() => setOpenAdd(true)}
+          >
+            <Plus className="w-4 h-4 mr-2" /> Add Child
+          </Button>
         </div>
       </div>
 
@@ -431,98 +939,161 @@ export default function Children() {
         )}
       </div>
 
-      {/* List */}
-      <div className="space-y-3">
-        {displayChildren.length === 0 && !loading ? (
-          <p className="text-gray-600">No children found.</p>
-        ) : (
-          displayChildren.map((child) => (
-            <div
-              key={child.id}
-              className="flex items-center justify-between bg-white rounded-xl border border-purple-200 p-4"
-            >
-              <div>
-                <p className="font-semibold text-purple-700">{child.name}</p>
-                <p className="text-sm text-gray-600">
-                  Age: {child.age} | Gender: {child.gender} | Class:{" "}
-                  {child.className || "-"}
-                </p>
-                <p className="text-sm text-gray-600">
-                  Parent: {child.parent || child.guardian || "-"} | Contact:{" "}
-                  {child.contact || "-"}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  className="border-purple-300 text-purple-700"
-                  onClick={() => openEditModal(child)}
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-sm font-medium text-gray-600">
+            Today's Attendance
+          </h3>
+          <p className="text-2xl font-bold text-pink-600">{todaysAttendance}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-sm font-medium text-gray-600">
+            Today's Offering
+          </h3>
+          <p className="text-2xl font-bold text-pink-600">{todaysOffering}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-sm font-medium text-gray-600">
+            This Month Attendance
+          </h3>
+          <p className="text-2xl font-bold text-pink-600">
+            {monthlyAttendance}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-sm font-medium text-gray-600">
+            This Month Offering
+          </h3>
+          <p className="text-2xl font-bold text-pink-600">{monthlyOffering}</p>
+        </div>
+      </div>
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+      {/* Table */}
+      <div className="overflow-x-auto bg-white rounded-lg shadow mt-4">
+        <table className="w-full border-collapse">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-2 border">Name</th>
+              <th className="p-2 border">Age</th>
+              <th className="p-2 border">Gender</th>
+              <th className="p-2 border">Class</th>
+              <th className="p-2 border">Parent</th>
+              <th className="p-2 border">Contact</th>
+              <th className="p-2 border">Attendance</th>
+              <th className="p-2 border">Offering</th>
+              <th className="p-2 border">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={9} className="text-center p-4">
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto text-purple-600" />
+                </td>
+              </tr>
+            ) : displayChildren.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="text-center p-4 text-pink-600">
+                  No children found
+                </td>
+              </tr>
+            ) : (
+              displayChildren.map((c) => (
+                <tr key={c.id} className="hover:bg-gray-50">
+                  <td className="p-2 border">{c.name}</td>
+                  <td className="p-2 border">{c.age}</td>
+                  <td className="p-2 border">{c.gender}</td>
+                  <td className="p-2 border">{c.className}</td>
+                  <td className="p-2 border">{c.parent}</td>
+                  <td className="p-2 border">{c.contact}</td>
+                  <td className="p-2 border text-center">
+                    <input
+                      type="checkbox"
+                      checked={c.attendance || false}
+                      onChange={async (e) => {
+                        try {
+                          await fetch(`${API}/children/${c.id}`, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              attendance: e.target.checked,
+                            }),
+                          });
+                          fetchChildren();
+                        } catch (err) {
+                          console.error(err);
+                        }
+                      }}
+                    />
+                  </td>
+                  <td className="p-2 border text-center">
+                    <Input
+                      type="number"
+                      value={c.offering || 0}
+                      className="w-20"
+                      onChange={async (e) => {
+                        try {
+                          await fetch(`${API}/children/${c.id}`, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              offering: Number(e.target.value),
+                            }),
+                          });
+                          fetchChildren();
+                        } catch (err) {
+                          console.error(err);
+                        }
+                      }}
+                    />
+                  </td>
+                  <td className="p-2 border space-x-2 text-center">
                     <Button
                       variant="outline"
-                      className="border-red-300 text-red-600"
-                      onClick={() => setDeletingId(child.id)}
+                      size="sm"
+                      onClick={() => openEditModal(c)}
+                      className="text-purple-700 border-purple-300"
                     >
-                      <Trash className="w-4 h-4 mr-2" />
-                      Delete
+                      <Edit className="w-4 h-4" />
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete {child.name}?</AlertDialogTitle>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setDeletingId(null)}>
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction onClick={confirmDelete}>
-                        Yes, Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          ))
-        )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 border-red-300"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={confirmDelete}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-center items-center gap-3 pt-2">
-        <Button
-          variant="outline"
-          className="border-purple-300 bg-pink-600 hover:bg-purple-700 text-white"
-          disabled={page <= 1}
-          onClick={() => setPage((p) => p - 1)}
-        >
-          Previous
-        </Button>
-        <span className="text-gray-700">
-          Page {page} of {totalPages}
-        </span>
-        <Button
-          variant="outline"
-          className="border-purple-300 bg-pink-600 hover:bg-purple-700 text-white"
-          disabled={page >= totalPages}
-          onClick={() => setPage((p) => p + 1)}
-        >
-          Next
-        </Button>
-      </div>
-
-      {/* Edit Modal */}
-      <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent>
+      {/* Add Modal */}
+      <Dialog open={openAdd} onOpenChange={setOpenAdd}>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Child</DialogTitle>
+            <DialogTitle>Add Child</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleEditSave} className="grid gap-3">
+          <form onSubmit={handleAdd} className="space-y-3">
             <Input
               placeholder="Name"
               value={form.name}
@@ -540,8 +1111,8 @@ export default function Children() {
               value={form.gender}
               onValueChange={(v) => setForm({ ...form, gender: v })}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Gender" />
+              <SelectTrigger className="w-full border-purple-300">
+                <SelectValue placeholder="Select Gender" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Male">Male</SelectItem>
@@ -549,18 +1120,79 @@ export default function Children() {
               </SelectContent>
             </Select>
             <Input
-              placeholder="Parent/Guardian"
+              placeholder="Parent/Guardian Name"
               value={form.parent}
               onChange={(e) => setForm({ ...form, parent: e.target.value })}
-              required
             />
             <Input
               placeholder="Contact"
               value={form.contact}
               onChange={(e) => setForm({ ...form, contact: e.target.value })}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpenAdd(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+                disabled={saving}
+              >
+                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}{" "}
+                Save
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Modal */}
+      <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Child</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditSave} className="space-y-3">
+            <Input
+              placeholder="Name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
             />
-            <div className="flex gap-2 justify-end">
+            <Input
+              type="number"
+              placeholder="Age"
+              value={form.age}
+              onChange={(e) => setForm({ ...form, age: e.target.value })}
+              required
+            />
+            <Select
+              value={form.gender}
+              onValueChange={(v) => setForm({ ...form, gender: v })}
+            >
+              <SelectTrigger className="w-full border-purple-300">
+                <SelectValue placeholder="Select Gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Parent/Guardian Name"
+              value={form.parent}
+              onChange={(e) => setForm({ ...form, parent: e.target.value })}
+            />
+            <Input
+              placeholder="Contact"
+              value={form.contact}
+              onChange={(e) => setForm({ ...form, contact: e.target.value })}
+            />
+            <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -573,10 +1205,8 @@ export default function Children() {
                 className="bg-purple-600 hover:bg-purple-700 text-white"
                 disabled={saving}
               >
-                {saving ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : null}
-                Save Changes
+                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}{" "}
+                Save
               </Button>
             </div>
           </form>
@@ -585,6 +1215,12 @@ export default function Children() {
     </div>
   );
 }
+
+
+
+
+
+
 
 
 

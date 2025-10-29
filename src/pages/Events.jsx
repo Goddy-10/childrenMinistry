@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Events() {
   const { user } = useAuth(); // ✅ get logged-in user
-  const [events, setEvents] = useState([]); // backend will replace this later
+  const [events, setEvents] = useState([]); 
   const [filter, setFilter] = useState("upcoming");
   const [isModalOpen, setIsModalOpen] = useState(false);
 

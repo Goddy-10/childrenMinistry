@@ -2,11 +2,167 @@
 
 
 
+// // src/pages/HomePage.jsx
+// import { useState, useEffect } from "react";
+// import { ChevronLeft, ChevronRight } from "lucide-react";
+// import { useAuth } from "@/context/AuthContext";
+// import { useNavigate } from "react-router-dom";
 
+// export default function HomePage() {
+//   const { user, token } = useAuth();
+//   const navigate = useNavigate();
 
+//   const [mediaItems, setMediaItems] = useState([]);
+//   const [current, setCurrent] = useState(0);
+//   const [paused, setPaused] = useState(false);
+//   const [loading, setLoading] = useState(true);
 
+//   // Fetch media from backend
+//   useEffect(() => {
+//     const fetchMedia = async () => {
+//       try {
+//         const res = await fetch("http://localhost:5000/api/media", {
+//           headers: token
+//             ? { Authorization: `Bearer ${token}` }
+//             : { "Content-Type": "application/json" },
+//         });
 
+//         if (!res.ok) throw new Error("Failed to fetch media");
+//         const data = await res.json();
+//         setMediaItems(data);
+//       } catch (err) {
+//         console.error("Error fetching media:", err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
 
+//     fetchMedia();
+//   }, [token]);
+
+//   // Auto-slide
+//   useEffect(() => {
+//     if (paused || mediaItems.length === 0) return;
+//     const timer = setInterval(() => {
+//       setCurrent((prev) => (prev + 1) % mediaItems.length);
+//     }, 4000);
+//     return () => clearInterval(timer);
+//   }, [mediaItems.length, paused]);
+
+//   const nextSlide = () => setCurrent((prev) => (prev + 1) % mediaItems.length);
+//   const prevSlide = () =>
+//     setCurrent((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
+
+//   return (
+//     <div className="min-h-screen bg-gray-500 pt-4 px-4 md:px-6 flex items-center justify-center">
+//       {/* Floating Card */}
+//       <div className="bg-white w-full max-w-7xl min-h-[84vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+//         {/* Title strip */}
+//         <div className="bg-pink-600 text-white px-6 py-4 md:py-6 flex justify-between items-center">
+//           <h2 className="text-xl md:text-2xl font-bold text-center flex-1">
+//             Welcome to Grace Celebration Chapel - Karama
+//           </h2>
+
+//           {/* Admin-only buttons */}
+//           {user?.role === "admin" && (
+//             <div className="flex gap-3">
+//               <button
+//                 onClick={() => navigate("/gallery")}
+//                 className="bg-white text-pink-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+//               >
+//                 Add Media
+//               </button>
+//               <button
+//                 onClick={() => navigate("/gallery")}
+//                 className="bg-white text-pink-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+//               >
+//                 View All
+//               </button>
+//             </div>
+//           )}
+//         </div>
+
+//         {/* Body: slideshow */}
+//         <div
+//           className="relative p-6 md:p-10 flex-grow"
+//           onMouseEnter={() => setPaused(true)}
+//           onMouseLeave={() => setPaused(false)}
+//         >
+//           {loading ? (
+//             <p className="text-center text-gray-500">Loading media...</p>
+//           ) : mediaItems.length === 0 ? (
+//             <p className="text-center text-gray-600">
+//               No media available yet.
+//             </p>
+//           ) : (
+//             <div className="relative h-[28rem] rounded-xl overflow-hidden">
+//               {mediaItems.map((item, idx) => (
+//                 <div
+//                   key={idx}
+//                   className={`absolute inset-0 transition-opacity duration-700 ${
+//                     idx === current ? "opacity-100" : "opacity-0"
+//                   }`}
+//                 >
+//                   {item.media_type === "image" ? (
+//                     <img
+//                       src={item.file_url}
+//                       alt={item.description || "Media"}
+//                       className="w-full h-full object-cover rounded-xl"
+//                     />
+//                   ) : (
+//                     <video
+//                       src={item.file_url}
+//                       controls
+//                       className="w-full h-full object-cover rounded-xl"
+//                     />
+//                   )}
+//                   {item.description && (
+//                     <p className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-lg text-sm">
+//                       {item.description}
+//                     </p>
+//                   )}
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+
+//           {/* Navigation arrows */}
+//           {mediaItems.length > 1 && (
+//             <>
+//               <button
+//                 onClick={prevSlide}
+//                 className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+//               >
+//                 <ChevronLeft size={20} />
+//               </button>
+//               <button
+//                 onClick={nextSlide}
+//                 className="absolute top-1/2 right-4 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+//               >
+//                 <ChevronRight size={20} />
+//               </button>
+//             </>
+//           )}
+
+//           {/* Dots */}
+//           {mediaItems.length > 1 && (
+//             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+//               {mediaItems.map((_, idx) => (
+//                 <button
+//                   key={idx}
+//                   onClick={() => setCurrent(idx)}
+//                   className={`w-3 h-3 rounded-full ${
+//                     current === idx ? "bg-pink-600" : "bg-gray-300"
+//                   }`}
+//                 />
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
 
 
 
@@ -19,35 +175,48 @@
 
 // src/pages/HomePage.jsx
 import { useState, useEffect } from "react";
-import { Plus, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-
+import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
-  // Simulate logged-in role (later will come from backend auth)
-  const { user } = useAuth(); // change to "teacher" or "guest" to test restrictions
+  const { user, token } = useAuth();
+  const navigate = useNavigate();
 
-  const [mediaItems, setMediaItems] = useState([
-    { type: "image", url: "/images/sample1.jpg", description: "Sunday Service" },
-    { type: "image", url: "/images/sample2.jpg", description: "Youth Meeting" },
-  ]);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newMedia, setNewMedia] = useState({
-    headline: "",
-    description: "",
-    file: null,
-  });
-
+  const [mediaItems, setMediaItems] = useState([]);
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Auto slide
+  // Fetch featured media for homepage slideshow
   useEffect(() => {
-    if (paused) return;
+    const fetchFeaturedMedia = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/media/slides", {
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch featured media");
+        const data = await res.json();
+        setMediaItems(data);
+      } catch (err) {
+        console.error("Error fetching featured media:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedMedia();
+  }, [token]);
+
+  // Auto-slide logic
+  useEffect(() => {
+    if (paused || mediaItems.length === 0) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % mediaItems.length);
-    }, 3000);
+    }, 4000);
     return () => clearInterval(timer);
   }, [mediaItems.length, paused]);
 
@@ -55,42 +224,32 @@ export default function HomePage() {
   const prevSlide = () =>
     setCurrent((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!newMedia.file) return;
-
-    const fileUrl = URL.createObjectURL(newMedia.file);
-    const type = newMedia.file.type.startsWith("video") ? "video" : "image";
-
-    setMediaItems([
-      ...mediaItems,
-      { type, url: fileUrl, description: newMedia.description },
-    ]);
-
-    setNewMedia({ headline: "", description: "", file: null });
-    setIsModalOpen(false);
-
-    // ✅ Later: send to backend API
-  };
-
   return (
     <div className="min-h-screen bg-gray-500 pt-4 px-4 md:px-6 flex items-center justify-center">
       {/* Floating Card */}
-      <div className="bg-white w-full max-w-7xl min-h-[75vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="bg-white w-full max-w-7xl min-h-[84vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Title strip */}
-        <div className="bg-pink-600 text-white text-center px-6 py-4 md:py-6 flex justify-between items-center">
-          <h2 className="text-xl md:text-2xl font-bold">
+        <div className="bg-pink-600 text-white px-6 py-4 md:py-6 flex justify-between items-center">
+          <h2 className="text-xl md:text-2xl font-bold text-center flex-1">
             Welcome to Grace Celebration Chapel - Karama
           </h2>
 
-          {/* Admin-only add button */}
+          {/* Admin-only buttons */}
           {user?.role === "admin" && (
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-white text-pink-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 flex items-center gap-2"
-            >
-              <Plus size={18} /> Add Media
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate("/gallery")}
+                className="bg-white text-pink-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+              >
+                Add Media
+              </button>
+              <button
+                onClick={() => navigate("/gallery")}
+                className="bg-white text-pink-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+              >
+                View All
+              </button>
+            </div>
           )}
         </div>
 
@@ -100,114 +259,78 @@ export default function HomePage() {
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          <div className="relative h-96 rounded-xl overflow-hidden">
-            {mediaItems.map((item, idx) => (
-              <div
-                key={idx}
-                className={`absolute inset-0 transition-opacity duration-700 ${
-                  idx === current ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                {item.type === "image" ? (
-                  <img
-                    src={item.url}
-                    alt={item.description}
-                    className="w-full h-full object-cover rounded-xl"
-                  />
-                ) : (
-                  <video
-                    controls
-                    className="w-full h-full object-cover rounded-xl"
-                  >
-                    <source src={item.url} />
-                    Your browser does not support video.
-                  </video>
-                )}
-                {item.description && (
-                  <p className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-lg text-sm">
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <p className="text-center text-gray-500">Loading media...</p>
+          ) : mediaItems.length === 0 ? (
+            <p className="text-center text-gray-600">
+              No featured media yet. Admins can mark media as featured in the Gallery.
+            </p>
+          ) : (
+            <div className="relative h-[28rem] rounded-xl overflow-hidden">
+              {mediaItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  className={`absolute inset-0 transition-opacity duration-700 ${
+                    idx === current ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  {item.media_type === "image" ? (
+                    <img
+                      src={item.file_url || item.url}
+                      alt={item.description || "Media"}
+                      className="w-full h-full object-cover rounded-xl"
+                    />
+                  ) : (
+                    <video
+                      src={item.file_url || item.url}
+                      controls
+                      className="w-full h-full object-cover rounded-xl"
+                    />
+                  )}
+                  {item.description && (
+                    <p className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-lg text-sm">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Navigation arrows */}
-          <button
-            onClick={prevSlide}
-            className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute top-1/2 right-4 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
-          >
-            <ChevronRight size={20} />
-          </button>
+          {mediaItems.length > 1 && (
+            <>
+              <button
+                onClick={prevSlide}
+                className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                onClick={nextSlide}
+                className="absolute top-1/2 right-4 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </>
+          )}
 
           {/* Dots */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-            {mediaItems.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrent(idx)}
-                className={`w-3 h-3 rounded-full ${
-                  current === idx ? "bg-pink-600" : "bg-gray-300"
-                }`}
-              />
-            ))}
-          </div>
+          {mediaItems.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {mediaItems.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrent(idx)}
+                  className={`w-3 h-3 rounded-full ${
+                    current === idx ? "bg-pink-600" : "bg-gray-300"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Modal for Add Media */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-pink-600">Add New Media</h3>
-              <button onClick={() => setIsModalOpen(false)}>
-                <X size={24} className="text-gray-500 hover:text-red-600" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <input
-                type="text"
-                placeholder="Headline"
-                value={newMedia.headline}
-                onChange={(e) =>
-                  setNewMedia({ ...newMedia, headline: e.target.value })
-                }
-                className="border p-2 rounded-lg"
-              />
-              <textarea
-                placeholder="Description"
-                value={newMedia.description}
-                onChange={(e) =>
-                  setNewMedia({ ...newMedia, description: e.target.value })
-                }
-                className="border p-2 rounded-lg"
-              />
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={(e) =>
-                  setNewMedia({ ...newMedia, file: e.target.files[0] })
-                }
-                className="border p-2 rounded-lg"
-              />
-              <button
-                type="submit"
-                className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700"
-              >
-                Save Media
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
