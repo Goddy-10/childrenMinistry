@@ -13,9 +13,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Loader2, Plus, Download, Printer, Edit, Trash } from "lucide-react";
-import { Document, Packer, Paragraph, Table, TableRow, TableCell } from "docx";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell,TextRun,WidthType } from "docx";
 import { useAuth } from "@/context/AuthContext";
-
+import { saveAs } from "file-saver";
 // Backend API root
 const API = "http://localhost:5000";
 
@@ -214,119 +214,6 @@ export default function Timetable() {
     }
   };
 
-  // DOCX download
-  // const handleDownloadDOCX = async () => {
-  //   if (!entries.length) return;
-  //   const rows = entries.map(
-  //     (e) =>
-  //       new TableRow({
-  //         children: [
-  //           new TableCell({ children: [new Paragraph(e.date)] }),
-  //           new TableCell({ children: [new Paragraph(e.class_name || "")] }),
-  //           new TableCell({ children: [new Paragraph(e.teacher_name || "")] }),
-  //         ],
-  //       })
-  //   );
-
-  //   const table = new Table({
-  //     rows: [
-  //       new TableRow({
-  //         children: [
-  //           new TableCell({ children: [new Paragraph("Date")] }),
-  //           new TableCell({ children: [new Paragraph("Class")] }),
-  //           new TableCell({ children: [new Paragraph("Teacher")] }),
-  //         ],
-  //       }),
-  //       ...rows,
-  //     ],
-  //   });
-
-  //   const doc = new Document({
-  //     sections: [
-  //       { children: [new Paragraph("Sunday School Timetable"), table] },
-  //     ],
-  //   });
-
-  //   try {
-  //     const blob = await Packer.toBlob(doc);
-  //     const url = URL.createObjectURL(blob);
-  //     const a = document.createElement("a");
-  //     a.href = url;
-  //     a.download = "timetable.docx";
-  //     a.click();
-  //     URL.revokeObjectURL(url);
-  //   } catch (err) {
-  //     console.error("handleDownloadDOCX:", err);
-  //     alert("Could not generate DOCX.");
-  //   }
-  // };
-
-
-
-
-
-
-  const handleDownloadDOCX = async () => {
-    if (!entries.length) return;
-
-    try {
-      // Build rows: header + each entry row
-      const headerRow = new TableRow({
-        children: [
-          new TableCell({ children: [new Paragraph("Date")] }),
-          new TableCell({ children: [new Paragraph("Class")] }),
-          new TableCell({ children: [new Paragraph("Teacher")] }),
-        ],
-      });
-
-      const dataRows = entries.map(
-        (e) =>
-          new TableRow({
-            children: [
-              new TableCell({ children: [new Paragraph(e.date || "")] }),
-              new TableCell({
-                children: [
-                  new Paragraph(
-                    e.class_name || (e.class_id ? String(e.class_id) : "")
-                  ),
-                ],
-              }),
-              new TableCell({
-                children: [
-                  new Paragraph(
-                    e.teacher_name || (e.teacher_id ? String(e.teacher_id) : "")
-                  ),
-                ],
-              }),
-            ],
-          })
-      );
-
-      const table = new Table({
-        rows: [headerRow, ...dataRows],
-      });
-
-      const doc = new Document({
-        sections: [
-          {
-            properties: {},
-            children: [new Paragraph("Sunday School Timetable"), table],
-          },
-        ],
-      });
-
-      const blob = await Packer.toBlob(doc);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "timetable.docx";
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("handleDownloadDOCX:", err);
-      alert("Failed to generate DOCX: " + err.message);
-    }
-  };
 
 
 
@@ -334,48 +221,109 @@ export default function Timetable() {
 
 
 
-  // Print (open window + print)
-  // const handlePrint = () => {
-  //   const win = window.open("", "_blank");
-  //   if (!win) {
-  //     alert("Pop-up blocked. Allow pop-ups for printing.");
-  //     return;
-  //   }
-  //   win.document.write(`
-  //     <html>
-  //       <head>
-  //         <title>Timetable</title>
-  //         <style>
-  //           body { font-family: sans-serif; padding: 16px; }
-  //           h1 { color: #be185d; }
-  //           table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-  //           th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-  //           th { background: #f3f4f6; }
-  //         </style>
-  //       </head>
-  //       <body>
-  //         <h1>Sunday School Timetable</h1>
-  //         <table>
-  //           <thead><tr><th>Date</th><th>Class</th><th>Teacher</th></tr></thead>
-  //           <tbody>
-  //             ${entries
-  //               .map(
-  //                 (e) => `<tr>
-  //                   <td>${e.date}</td>
-  //                   <td>${e.class_name || ""}</td>
-  //                   <td>${e.teacher_name || ""}</td>
-  //                 </tr>`
-  //               )
-  //               .join("")}
-  //           </tbody>
-  //         </table>
-  //       </body>
-  //     </html>
-  //   `);
-  //   win.document.close();
-  //   win.focus();
-  //   win.print();
-  // };
+const handleDownloadDocx = async () => {
+  try {
+    // Group entries by date
+    const grouped = entries.reduce((acc, e) => {
+      if (!acc[e.date]) acc[e.date] = {};
+      acc[e.date][e.class_name] = e.teacher_name || "";
+      return acc;
+    }, {});
+
+    // Collect all unique classes
+    const allClasses = Array.from(
+      new Set(entries.map((e) => e.class_name))
+    ).filter(Boolean);
+
+    // Build header row (Date + all classes)
+    const headerRow = new TableRow({
+      children: [
+        new TableCell({
+          width: { size: 20, type: WidthType.PERCENTAGE },
+          children: [
+            new Paragraph({
+              children: [new TextRun({ text: "Date", bold: true })],
+            }),
+          ],
+        }),
+        ...allClasses.map(
+          (cls) =>
+            new TableCell({
+              width: {
+                size: 80 / allClasses.length,
+                type: WidthType.PERCENTAGE,
+              },
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: cls, bold: true })],
+                }),
+              ],
+            })
+        ),
+      ],
+    });
+
+    // Build each date row
+    const bodyRows = Object.entries(grouped).map(([date, classMap]) => {
+      const cells = [
+        new TableCell({
+          children: [new Paragraph(date)],
+        }),
+        ...allClasses.map(
+          (cls) =>
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun(classMap[cls] || "")],
+                }),
+              ],
+            })
+        ),
+      ];
+      return new TableRow({ children: cells });
+    });
+
+    const table = new Table({
+      rows: [headerRow, ...bodyRows],
+      width: { size: 100, type: WidthType.PERCENTAGE },
+    });
+
+    const doc = new Document({
+      sections: [
+        {
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Sunday School Timetable",
+                  bold: true,
+                  size: 32,
+                  color: "BE185D",
+                }),
+              ],
+              spacing: { after: 400 },
+            }),
+            table,
+          ],
+        },
+      ],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, "Sunday_School_Timetable.docx");
+  } catch (err) {
+    console.error("Error generating DOCX:", err);
+    alert("Failed to generate timetable document.");
+  }
+};
+
+
+
+
+
+
+
+
 
 
 
@@ -458,7 +406,7 @@ const handlePrint = () => {
           <Button
             variant="outline"
             className="border-pink-600 text-pink-600"
-            onClick={handleDownloadDOCX}
+            onClick={handleDownloadDocx}
           >
             <Download className="w-4 h-4 mr-2" /> Download
           </Button>
