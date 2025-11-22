@@ -1,30 +1,28 @@
 
 
-import { useEffect, useState, useMemo } from "react";
+
+
+
+
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/context/AuthContext";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Edit, Trash, Download, Printer, Loader2 } from "lucide-react";
+import { Edit, Trash, Download, Loader2 } from "lucide-react";
 import { PDFDocument, rgb } from "pdf-lib";
-import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun } from "docx";
+import { Document, Packer, Paragraph, Table, TableCell, TableRow,TextRun } from "docx";
+
+
+
 
 const API = "http://localhost:5000"; // backend API
 
@@ -37,16 +35,17 @@ const CLASS_TABS = [
 ];
 
 export default function Reports() {
+  const { token } = useAuth();
   const [activeTab, setActiveTab] = useState("gifted");
   const [reports, setReports] = useState([]);
-  const [children, setChildren] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const [saving, setSaving] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+
+
+  
 
   const blankForm = {
     date: "",
@@ -57,25 +56,32 @@ export default function Reports() {
   };
   const [form, setForm] = useState(blankForm);
 
-  // Fetch children & reports
-  const fetchChildren = async () => {
-    try {
-      const res = await fetch(`${API}/children`);
-      if (!res.ok) throw new Error("Failed to fetch children");
-      const data = await res.json();
-      setChildren(data.items || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // KPI from backend
+  const [kpi, setKpi] = useState({
+    todays_attendance: 0,
+    todays_offering: 0,
+    month_attendance: 0,
+    month_offering: 0,
+  });
 
+  // Fetch reports from backend
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/reports?class=${activeTab}`);
+      const res = await fetch(
+        `${API}/api/reports/weekly?class_id=${classMap[activeTab]}`
+      );
       if (!res.ok) throw new Error("Failed to fetch reports");
       const data = await res.json();
-      setReports(data.items || []);
+      const mapped = data.map((r) => ({
+        id: r.id,
+        date: r.date,
+        topic: r.topic || "",
+        bible_reference: r.bible_reference || "",
+        resources: r.resources || "",
+        remarks: r.remarks || "",
+      }));
+      setReports(mapped);
     } catch (err) {
       console.error(err);
     } finally {
@@ -83,58 +89,70 @@ export default function Reports() {
     }
   };
 
+  // Fetch KPI from backend
+  const fetchKpi = async () => {
+    try {
+      const res = await fetch(`${API}/api/reports/kpi?class_id=${classMap[activeTab]}`);
+      if (!res.ok) throw new Error("Failed to fetch KPI");
+      const data = await res.json();
+      setKpi(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    fetchChildren();
     fetchReports();
+    fetchKpi();
   }, [activeTab]);
 
-  // KPI calculations
-  const kpi = useMemo(() => {
-    const classChildren = children.filter(
-      (c) => c.className?.toLowerCase() === activeTab
-    );
-    const today = new Date().toISOString().slice(0, 10);
-    const todayAttendance = classChildren.filter((c) =>
-      c.attendance?.includes(today)
-    ).length;
-    const todayOffering = classChildren.reduce(
-      (sum, c) => sum + (c.offering?.[today] || 0),
-      0
-    );
-    const month = new Date().getMonth();
-    const monthAttendance = classChildren.reduce(
-      (sum, c) =>
-        sum +
-        (c.attendance?.filter((d) => new Date(d).getMonth() === month).length ||
-          0),
-      0
-    );
-    const monthOffering = classChildren.reduce(
-      (sum, c) =>
-        sum +
-        Object.entries(c.offering || {}).reduce((s, [d, val]) => {
-          if (new Date(d).getMonth() === month) s += val;
-          return s;
-        }, 0),
-      0
-    );
-    return { todayAttendance, todayOffering, monthAttendance, monthOffering };
-  }, [children, activeTab]);
+
+  //--------Map class to Integers-----//
+
+  const classMap = {
+    gifted: 1,
+    beginners: 2,
+    shinners: 3,
+    conquerors: 4,
+    teens: 5,
+  };
+
 
   // Add report
   const handleAddReport = async (e) => {
+    
+
     e.preventDefault();
+    console.log(classMap, activeTab, classMap[activeTab]);
     setSaving(true);
     try {
-      const res = await fetch(`${API}/reports`, {
+      const token = localStorage.getItem("token");
+      console.log("Token:", token);
+      // if (!token) {
+      //   alert("You are not logged in!");
+      //   return;
+      // }
+      const res = await fetch(`${API}/api/reports/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, class: activeTab }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          date: form.date,
+          topic: form.topic,
+          bible_reference: form.bibleRefs,
+          resources: form.resources,
+          remarks: form.remarks,
+          class_id: classMap[activeTab],
+          
+        }),
       });
       if (!res.ok) throw new Error("Failed to save report");
       setForm(blankForm);
       setOpenAdd(false);
       fetchReports();
+      fetchKpi();
     } catch (err) {
       console.error(err);
     } finally {
@@ -148,7 +166,7 @@ export default function Reports() {
     setForm({
       date: report.date,
       topic: report.topic,
-      bibleRefs: report.bibleRefs,
+      bibleRefs: report.bible_reference,
       resources: report.resources,
       remarks: report.remarks,
     });
@@ -159,16 +177,27 @@ export default function Reports() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch(`${API}/reports/${editingId}`, {
+      const res = await fetch(`${API}/api/reports/${editingId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:`Bearer ${token}`,
+         },
+        body: JSON.stringify({
+          date: form.date,
+          topic: form.topic,
+          bible_reference: form.bibleRefs,
+          resources: form.resources,
+          remarks: form.remarks,
+          class_id: classMap[activeTab],
+        }),
       });
       if (!res.ok) throw new Error("Failed to update report");
       setForm(blankForm);
       setEditingId(null);
       setOpenEdit(false);
       fetchReports();
+      fetchKpi();
     } catch (err) {
       console.error(err);
     } finally {
@@ -177,105 +206,257 @@ export default function Reports() {
   };
 
   // Delete report
+  // const handleDelete = async (id) => {
+  //   if (!window.confirm("Delete this report?")) return;
+  //   try {
+  //     const res = await fetch(`${API}/api/reports/${id}`, { method: "DELETE" });
+  //     if (!res.ok) throw new Error("Delete failed");
+  //     fetchReports();
+  //     fetchKpi();
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
+
+   // get token from AuthContext
+
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this report?")) return;
     try {
-      const res = await fetch(`${API}/reports/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API}/api/reports/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ add this
+        },
+      });
       if (!res.ok) throw new Error("Delete failed");
       fetchReports();
+      fetchKpi();
     } catch (err) {
       console.error(err);
     }
   };
 
+
+
   // Export PDF
-  const handleDownloadPDF = async () => {
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([600, 800]);
-    page.drawText(`Weekly Reports - ${activeTab}`, {
-      x: 50,
-      y: 770,
-      size: 20,
-      color: rgb(0.6, 0, 0.6),
+const handleDownloadPDF = async () => {
+  const pdfDoc = await PDFDocument.create();
+  let page = pdfDoc.addPage([600, 800]);
+
+  //-------church logo here------#
+
+  // ✅ Load church logo
+  try {
+    const logoUrl =
+      "https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/80a862e1f2bbb064e527baa285917059~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=705fe0c1&x-expires=1764000000&x-signature=%2Fdskb6riGVSiFPzodVdU%2BX4%2FrFY%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=maliva";
+
+    const logoBytes = await fetch(logoUrl).then((res) => res.arrayBuffer());
+    const logoImage = await pdfDoc.embedJpg(logoBytes); // ✅ keep as JPG
+    const logoDims = logoImage.scale(0.38); // shrink so it fits
+
+    // ✅ Draw logo at the top center
+    page.drawImage(logoImage, {
+      x: (600 - logoDims.width) / 5,
+      y: 745, // slightly below top
+      width: logoDims.width,
+      height: logoDims.height,
     });
-    let y = 740;
-    reports.forEach((r) => {
-      page.drawText(
-        `${r.date} | ${r.topic} | ${r.bibleRefs} | ${r.resources} | ${r.remarks}`,
-        {
-          x: 50,
-          y,
-          size: 12,
-        }
-      );
-      y -= 20;
+  } catch (err) {
+    console.warn("⚠️ Logo failed to load:", err);
+  }
+
+  //-------church logo here------#
+
+  const fontSize = 10;
+  const rowHeight = 40; // taller to allow wrapped text
+
+  // Title
+  page.drawText(`Weekly Reports - ${activeTab}`, {
+    x: 180,
+    y: 770,
+    size: 20,
+    color: rgb(0.6, 0, 0.6),
+  });
+
+  // Starting Y
+  let y = 740;
+
+  // Column widths
+  const colWidths = [70, 110, 120, 110, 120]; // ADJUST HERE IF NEEDED
+  const colX = [50, 120, 230, 350, 460];
+
+  // Helper to wrap text
+  const wrapText = (text, maxChars) => {
+    if (!text) return [""];
+    const words = text.split(" ");
+    const lines = [];
+    let line = "";
+
+    words.forEach((w) => {
+      if ((line + w).length > maxChars) {
+        lines.push(line.trim());
+        line = w + " ";
+      } else {
+        line += w + " ";
+      }
     });
-    const pdfBytes = await pdfDoc.save();
-    const blob = new Blob([pdfBytes], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `reports-${activeTab}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+    lines.push(line.trim());
+    return lines;
   };
 
-  // Export DOCX
-  const handleDownloadDOCX = async () => {
-    const doc = new Document({
-      sections: [
-        {
-          children: [
-            new Paragraph({
-              text: `Weekly Reports - ${activeTab}`,
-              heading: "Heading1",
-            }),
-            new Table({
-              rows: [
-                new TableRow({
-                  children: [
-                    "Date",
-                    "Topic",
-                    "Bible References",
-                    "Resources",
-                    "Remarks",
-                  ].map(
-                    (txt) =>
-                      new TableCell({
-                        children: [new Paragraph({ text: txt, bold: true })],
-                      })
-                  ),
-                }),
-                ...reports.map(
-                  (r) =>
-                    new TableRow({
-                      children: [
-                        r.date,
-                        r.topic,
-                        r.bibleRefs,
-                        r.resources,
-                        r.remarks,
-                      ].map(
-                        (txt) =>
-                          new TableCell({ children: [new Paragraph(txt)] })
-                      ),
-                    })
-                ),
-              ],
-            }),
-          ],
-        },
-      ],
+  // ✅ Draw header row with borders
+  const headers = ["Date", "Topic", "Bible Ref", "Resources", "Remarks"];
+
+  headers.forEach((h, i) => {
+    // border
+    page.drawRectangle({
+      x: colX[i],
+      y: y - rowHeight,
+      width: colWidths[i],
+      height: rowHeight,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 1,
     });
-    const packer = new Packer();
-    const buffer = await packer.toBlob(doc);
-    const url = URL.createObjectURL(buffer);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `reports-${activeTab}.docx`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+
+    // text
+    page.drawText(h, {
+      x: colX[i] + 4,
+      y: y - 15,
+      size: fontSize,
+    });
+  });
+
+  y -= rowHeight;
+
+  // ✅ Table rows
+  reports.forEach((r) => {
+    if (y < 60) {
+      page = pdfDoc.addPage([600, 800]);
+      y = 750;
+    }
+
+    const rowValues = [
+      r.date || "",
+      r.topic || "",
+      r.bible_reference || "",
+      r.resources || "",
+      r.remarks || "",
+    ];
+
+    rowValues.forEach((val, i) => {
+      const lines = wrapText(val, 20); // wrap limit per cell
+
+      // border
+      page.drawRectangle({
+        x: colX[i],
+        y: y - rowHeight,
+        width: colWidths[i],
+        height: rowHeight,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 1,
+      });
+
+      // text
+      lines.slice(0, 2).forEach((line, li) => {
+        page.drawText(line, {
+          x: colX[i] + 4,
+          y: y - 15 - li * 12,
+          size: fontSize,
+        });
+      });
+    });
+
+    y -= rowHeight;
+  });
+
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `reports-${activeTab}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+  //----Export DOCX-----#
+
+ const handleDownloadDOCX = async () => {
+   try {
+     // ✅ Build rows FIRST (like your working example)
+     const tableRows = [
+       new TableRow({
+         children: [
+           "Date",
+           "Topic",
+           "Bible References",
+           "Resources",
+           "Remarks",
+         ].map(
+           (txt) =>
+             new TableCell({
+               children: [
+                 new Paragraph({
+                   children: [
+                     new TextRun({ text: txt, bold: true }), // ✅ REAL bold
+                   ],
+                 }),
+               ],
+             })
+         ),
+       }),
+
+       ...reports.map(
+         (r) =>
+           new TableRow({
+             children: [
+               r.date,
+               r.topic,
+               r.bible_reference,
+               r.resources,
+               r.remarks,
+             ].map(
+               (txt) =>
+                 new TableCell({
+                   children: [new Paragraph(txt || "")],
+                 })
+             ),
+           })
+       ),
+     ];
+
+     // ✅ Same as working snippet
+     const doc = new Document({
+       sections: [
+         {
+           properties: {},
+           children: [
+             new Paragraph({
+               text: `Weekly Reports - ${activeTab}`,
+               heading: "Heading1",
+             }),
+             new Table({
+               rows: tableRows,
+               width: { size: 100, type: "pct" }, // ✅ matching working code
+             }),
+           ],
+         },
+       ],
+     });
+
+     const blob = await Packer.toBlob(doc);
+     const url = window.URL.createObjectURL(blob);
+     const a = document.createElement("a");
+     a.href = url;
+     a.download = `reports-${activeTab}.docx`;
+     a.click();
+     window.URL.revokeObjectURL(url);
+   } catch (err) {
+     console.error("DOCX download failed:", err);
+   }
+ };
+  //------RETURN JSX--------#
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
@@ -303,7 +484,7 @@ export default function Reports() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-pink-600">
-                    {kpi.todayAttendance}
+                    {kpi.todays_attendance}
                   </p>
                 </CardContent>
               </Card>
@@ -313,7 +494,7 @@ export default function Reports() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-pink-600">
-                    {kpi.todayOffering}
+                    {kpi.todays_offering}
                   </p>
                 </CardContent>
               </Card>
@@ -323,7 +504,7 @@ export default function Reports() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-pink-600">
-                    {kpi.monthAttendance}
+                    {kpi.month_attendance}
                   </p>
                 </CardContent>
               </Card>
@@ -333,7 +514,7 @@ export default function Reports() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-pink-600">
-                    {kpi.monthOffering}
+                    {kpi.month_offering}
                   </p>
                 </CardContent>
               </Card>
@@ -399,7 +580,7 @@ export default function Reports() {
                       <tr key={r.id} className="hover:bg-gray-50">
                         <td className="p-2 border">{r.date}</td>
                         <td className="p-2 border">{r.topic}</td>
-                        <td className="p-2 border">{r.bibleRefs}</td>
+                        <td className="p-2 border">{r.bible_reference}</td>
                         <td className="p-2 border">{r.resources}</td>
                         <td className="p-2 border">{r.remarks}</td>
                         <td className="p-2 border space-x-2">
@@ -544,18 +725,3 @@ export default function Reports() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
