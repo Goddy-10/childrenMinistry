@@ -82,6 +82,8 @@ export default function Children({ role = "teacher" }) {
   // todayAttendanceMap: { childId: true/false } (quick map for today's checkbox UI)
   const [attendanceMap, setAttendanceMap] = useState({});
   const [todayAttendanceMap, setTodayAttendanceMap] = useState({});
+  const [attendanceMonthTotal, setAttendanceMonthTotal] = useState(0);
+  const [attendanceTodayTotal, setAttendanceTodayTotal] = useState(0);
 
   // Global list of last attendance dates (most recent first) displayed as columns (max 4)
   const [lastAttendanceDates, setLastAttendanceDates] = useState([]); // array of "YYYY-MM-DD" strings, newest first
@@ -104,7 +106,7 @@ export default function Children({ role = "teacher" }) {
         class: classFilter === "all" ? "" : classFilter,
       });
       
-      // your backend route (you used /api/children/ earlier)
+      //  backend route (used /api/children/ earlier)
       const res = await fetch(`${API}/api/children/?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch children");
       // backend returns an array or an object with items - we handle both
@@ -136,88 +138,150 @@ export default function Children({ role = "teacher" }) {
   // ---------------- Fetch attendance & offerings ----------------
   // We fetch attendance records across a reasonable window (e.g. last 90 days)
   // then compute the last distinct dates (global, newest first) and build attendanceMap.
-  const fetchAttendanceAndOfferings = async () => {
-    try {
-      // Fetch attendance for last 90 days (should include recent Sundays)
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 90);
-      const startStr = startDate.toISOString().slice(0, 10);
+const fetchAttendanceAndOfferings = async () => {
+  try {
+    // --- Attendance for table (last 3 recorded + today) ---
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 90); // last 90 days
+    const startStr = startDate.toISOString().slice(0, 10);
 
-      // NOTE: backend needs to support this endpoint returning attendance rows:
-      // [{ id, child_id, date: "YYYY-MM-DD", present: true/false }, ...]
-      const attRes = await fetch(`${API}/api/children/attendance?start=${startStr}&end=${todayISO}`);
-      let attendanceRows = [];
-      if (attRes.ok) {
-        attendanceRows = await attRes.json();
-      } else {
-        // try a fallback if your backend returns array from another path
-        console.warn("fetchAttendanceAndOfferings: attendance endpoint returned non-ok");
-      }
+    // Use the correct backend endpoint returning full attendance rows
+    const attRes = await fetch(
+      `${API}/api/children/attendance?start=${startStr}&end=${todayISO}`
+    );
+    let attendanceRows = [];
+    if (attRes.ok) {
+      attendanceRows = await attRes.json();
+    } else {
+      console.warn(
+        "fetchAttendanceAndOfferings: attendance endpoint returned non-ok"
+      );
+    }
 
-      // build per-child map and gather distinct dates
-      const attMap = {};
-      const dateSet = new Set();
+    // --- Build per-child attendance map ---
+    const attMap = {};
+    const dateSet = new Set();
 
-      (attendanceRows || []).forEach((r) => {
+    if (Array.isArray(attendanceRows)) {
+      attendanceRows.forEach((r) => {
         if (!r) return;
-        const cid = r.child_id ?? r.childId ?? r.child_id;
+        const cid = r.child_id ?? r.childId;
         const dt = r.date || r.dt || r.date_iso;
         if (!cid || !dt) return;
         attMap[cid] = attMap[cid] || {};
         attMap[cid][dt] = !!r.present;
         dateSet.add(dt);
       });
+    }
 
-      // Build sorted distinct dates (newest first)
-      const dates = Array.from(dateSet)
-        .sort((a, b) => (a < b ? 1 : -1));
+    // --- Last 3 recorded dates per child + today ---
 
-      // Keep top 4 most recent past dates (these will be the past columns)
-      const top4 = dates.slice(0, 4);
+    // --- Last 3 recorded dates per child + today ---
+    const dates = Array.from(dateSet).sort((a, b) => (a < b ? 1 : -1)); // newest first
 
-      setAttendanceMap(attMap);
-      setLastAttendanceDates(top4);
+    // Always include today
+    if (!dates.includes(todayISO)) {
+      dates.unshift(todayISO);
+    }
 
-      // populate today's attendance map (if an attendance record exists for today)
-      const todayMap = {};
-      Object.keys(attMap).forEach((cid) => {
-        if (attMap[cid] && attMap[cid][todayISO] !== undefined) {
-          todayMap[cid] = !!attMap[cid][todayISO];
+    // Take top 3 historical dates (excluding today) + today at the end
+    const historicalTop3 = dates.filter((d) => d !== todayISO).slice(0, 3);
+    const topDates = [...historicalTop3, todayISO];
+
+    setAttendanceMap(attMap); // for table
+    setLastAttendanceDates(topDates); // now includes today
+
+    // --- Ensure all children have entries for all topDates (historical + today) ---
+    Object.keys(attMap).forEach((cid) => {
+      topDates.forEach((d) => {
+        if (attMap[cid][d] === undefined) {
+          attMap[cid][d] = false; // default absent
         }
       });
-      setTodayAttendanceMap(todayMap);
+    });
 
-      // Offerings: today's and monthly
-      const todayOfferRes = await fetch(`${API}/api/children/offerings?start=${todayISO}&end=${todayISO}`);
-      if (todayOfferRes.ok) {
-        const rows = await todayOfferRes.json();
-        const map = {};
-        (Array.isArray(rows) ? rows : []).forEach((o) => {
-          map[o.class_id] = Number(o.amount || 0);
-        });
-        setClassOfferingsToday(map);
-      } else {
-        setClassOfferingsToday({});
+    // const dates = Array.from(dateSet).sort((a, b) => (a < b ? 1 : -1));
+    // const top3 = dates.slice(0, 3);
+
+    // setAttendanceMap(attMap); // for table
+    // setLastAttendanceDates(top3);
+
+    // --- Today's attendance map ---
+    const todayMap = {};
+    Object.keys(attMap).forEach((cid) => {
+      if (attMap[cid] && attMap[cid][todayISO] !== undefined) {
+        todayMap[cid] = !!attMap[cid][todayISO];
       }
+    });
+    setTodayAttendanceMap(todayMap);
+    await fetchAttendanceKpi();
 
-      // offerings this month: first and last of month
-      const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0,10);
-      const lastOfMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).toISOString().slice(0,10);
-      const monthOfferRes = await fetch(`${API}/api/children/offerings?start=${firstOfMonth}&end=${lastOfMonth}`);
-      if (monthOfferRes.ok) {
-        const rows = await monthOfferRes.json();
-        const map = {};
-        (Array.isArray(rows) ? rows : []).forEach((o) => {
+    // --- Offerings: today's and monthly ---
+    const fetchOfferings = async (start, end) => {
+      const res = await fetch(
+        `${API}/api/children/offerings?start=${start}&end=${end}`
+      );
+      if (!res.ok) return {};
+      const rows = await res.json();
+      const map = {};
+      if (Array.isArray(rows)) {
+        rows.forEach((o) => {
           map[o.class_id] = (map[o.class_id] || 0) + Number(o.amount || 0);
         });
-        setClassOfferingsMonth(map);
-      } else {
-        setClassOfferingsMonth({});
       }
-    } catch (err) {
-      console.error("fetchAttendanceAndOfferings:", err);
-    }
-  };
+      return map;
+    };
+
+    const todayOfferings = await fetchOfferings(todayISO, todayISO);
+    setClassOfferingsToday(todayOfferings);
+
+    const firstOfMonth = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1
+    )
+      .toISOString()
+      .slice(0, 10);
+    const lastOfMonth = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth() + 1,
+      0
+    )
+      .toISOString()
+      .slice(0, 10);
+    const monthOfferings = await fetchOfferings(firstOfMonth, lastOfMonth);
+    setClassOfferingsMonth(monthOfferings);
+  } catch (err) {
+    console.error("fetchAttendanceAndOfferings:", err);
+  }
+};
+  
+  //--------KPI LOGIC------#
+
+  // --- Fetch KPI totals for attendance (today + this month) ---
+const fetchAttendanceKpi = async () => {
+  try {
+    // Today
+    const todayRes = await fetch(`${API}/api/children/attendance?start=${todayISO}&end=${todayISO}`);
+    const todayData = todayRes.ok ? await todayRes.json() : { total_attendance: 0 };
+    setAttendanceTodayTotal(todayData.total_attendance || 0);
+
+    // This month
+    const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+      .toISOString().slice(0, 10);
+    const lastOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
+      .toISOString().slice(0, 10);
+
+    const monthRes = await fetch(`${API}/api/children/attendance?start=${firstOfMonth}&end=${lastOfMonth}`);
+    const monthData = monthRes.ok ? await monthRes.json() : { total_attendance: 0 };
+    setAttendanceMonthTotal(monthData.total_attendance || 0);
+  } catch (err) {
+    console.error("fetchAttendanceKpi:", err);
+  }
+};
+
+
+
 
   // ---------------- Effects ----------------
   useEffect(() => {
@@ -258,8 +322,13 @@ export default function Children({ role = "teacher" }) {
   const confirmDelete = async (childId) => {
     try {
       setDeletingId(childId);
+      const token = localStorage.getItem("token");
       const res = await fetch(`${API}/api/children/${childId}`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // <--- REQUIRED
+        },
       });
       if (!res.ok) {
         const b = await res.json().catch(() => ({}));
@@ -281,10 +350,14 @@ export default function Children({ role = "teacher" }) {
   const handleRowSave = async (childId) => {
     setSaving(true);
     try {
+      const token = localStorage.getItem("token");
       const formData = rowFormMap[childId];
       const res = await fetch(`${API}/api/children/${childId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(formData),
       });
       if (!res.ok) {
@@ -491,7 +564,7 @@ export default function Children({ role = "teacher" }) {
         c.className || "",
         c.parent || "",
         c.contact || "",
-        ...lastAttendanceDates.map((d) => (attendanceMap[c.id]?.[d] ? "✔" : "✘")),
+        ...lastAttendanceDates.map((d) => (attendanceMap[c.id]?.[d] ? "Y" : "N")),
       ];
       cells.forEach((txt) => {
         page.drawText(txt, { x, y, size: 9, font });
