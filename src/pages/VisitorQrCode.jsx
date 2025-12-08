@@ -36,6 +36,7 @@ export default function VisitorManagement() {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
+    const token = localStorage.getItem("jwt");
 
     try {
       const res = await fetch(`${API}/api/visitors`, {
@@ -97,10 +98,20 @@ export default function VisitorManagement() {
 
   // Clear all followed visitors
   const clearFollowed = async () => {
-    const followedIds = visitors.filter(v => v.followedUp).map(v => v.id);
+    const followedIds = visitors.filter((v) => v.followedUp).map((v) => v.id);
+    const token = localStorage.getItem("jwt"); // get token
+
     try {
-      for (const id of followedIds) await fetch(`${API}/api/visitors/${id}`, { method: "DELETE" });
-      setVisitors(visitors.filter(v => !v.followedUp));
+      for (const id of followedIds) {
+        await fetch(`${API}/api/visitors/${id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      }
+      setVisitors(visitors.filter((v) => !v.followedUp));
     } catch (err) {
       console.error("Failed to clear followed visitors:", err);
     }

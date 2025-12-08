@@ -59,7 +59,7 @@ export default function HomePage() {
         {/* Title strip */}
         <div className="bg-pink-600 text-white px-6 py-4 md:py-6 flex justify-between items-center">
           <h2 className="text-xl md:text-2xl font-bold text-center flex-1">
-            Welcome to Grace Celebration Chapel - Karama
+            THE POTTER`S CENTER
           </h2>
 
           {/* Admin-only buttons */}

@@ -73,6 +73,16 @@ export default function Adults() {
   const { token } = useAuth(); // << CHANGED: token used for authenticated requests
   const [activeTab, setActiveTab] = useState("membership");
 
+  const switchTab = (tabName) => {
+    setActiveTab(tabName);
+
+    // if we are leaving missions tab, clear the partner table
+    if (tabName !== "missions") {
+      setPartners([]);
+      setSelectedMissionId(null);
+    }
+  };
+
   // Membership & New Believers (server-backed)
   const [members, setMembers] = useState([]);
   const [newBelievers, setNewBelievers] = useState([]);
@@ -135,7 +145,7 @@ export default function Adults() {
     contact_email: "",
   });
 
-  // ### ADDED: deptMemberForm state (was referenced in logic earlier)
+  
   const [deptMemberForm, setDeptMemberForm] = useState({
     name: "",
     position: "",
@@ -146,6 +156,24 @@ export default function Adults() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [editType, setEditType] = useState(null);
+
+
+
+  const loadDeptAndMembers = async () => {
+    try {
+      const departments = await commonFetch("/api/departments");
+      const deptMembers = await commonFetch("/api/department-members/");
+
+      const merged = departments.map((dept) => ({
+        ...dept,
+        members: deptMembers.filter((m) => m.department_id === dept.id),
+      }));
+
+      setDepartments(merged);
+    } catch (err) {
+      alert("Failed loading departments: " + err.message);
+    }
+  };
 
   // -------------------------
   // Fetch helpers (for tabs)
@@ -351,7 +379,7 @@ export default function Adults() {
     // fetch members
     (async () => {
       try {
-        const m = await commonFetch("/api/members/");
+        const m = await commonFetch("/api/members");
         setMembers(m || []);
       } catch (err) {
         console.error("Failed to load members:", err);
@@ -740,6 +768,8 @@ export default function Adults() {
   };
 
   const deleteDepartment = async (deptId) => {
+    if (!window.confirm("Are you sure you want to delete this department?"))
+      return;
     try {
       await commonFetch(`/api/departments/${deptId}`, { method: "DELETE" });
       setDepartments((s) => s.filter((d) => d.id !== deptId));
@@ -754,7 +784,7 @@ export default function Adults() {
 
     try {
       const payload = { ...deptMemberForm, department_id: deptId };
-      const created = await commonFetch("/api/members", {
+      const created = await commonFetch("/api/department-members/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -766,6 +796,7 @@ export default function Adults() {
         updated[deptIndex].members.push(created);
         return updated;
       });
+      loadDeptAndMembers();
 
       setDeptMemberForm({ name: "", position: "", phone: "" });
     } catch (err) {
@@ -775,7 +806,9 @@ export default function Adults() {
 
   const deleteDeptMember = async (deptId, memberId, deptIndex) => {
     try {
-      await commonFetch(`/api/members/${memberId}`, { method: "DELETE" });
+      await commonFetch(`/api/department-members/${memberId}`, { method: "DELETE" });
+      loadDeptAndMembers();
+
       setDepartments((prev) => {
         const updated = [...prev];
         updated[deptIndex].members = updated[deptIndex].members.filter(
@@ -787,6 +820,9 @@ export default function Adults() {
       alert(`Failed to delete member: ${err.message}`);
     }
   };
+  useEffect(() => {
+    loadDeptAndMembers();
+  }, []);
 
   // -------------------- EDIT MODAL --------------------
   const openEdit = (type, item) => {
@@ -877,7 +913,7 @@ export default function Adults() {
             className={`px-4 py-2 rounded ${
               activeTab === tab ? "bg-pink-600 text-white" : "bg-gray-200"
             }`}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => switchTab(tab)}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
@@ -944,7 +980,7 @@ export default function Adults() {
                 className="flex justify-between items-center border-b py-1"
               >
                 <div>
-                  {m.name} - {m.phone} - {m.residence || ""}
+                  {m.full_name} - {m.phone} - {m.residence || ""}
                 </div>
                 <div>
                   <button
@@ -1597,74 +1633,116 @@ export default function Adults() {
       {activeTab === "departments" && (
         <div>
           <h2 className="text-lg font-semibold mb-2">Departments</h2>
-          <input
-            className="border p-2 mr-2"
-            placeholder="Department Name"
-            value={departmentForm.name}
-            onChange={(e) =>
-              setDepartmentForm({ ...departmentForm, name: e.target.value })
-            }
-          />
-          <button
-            onClick={addDepartment}
-            className="bg-pink-600 text-white px-4 py-2 rounded"
-          >
-            Add Department
-          </button>
 
+          {/* Add Department */}
+          <div className="flex items-center mb-4">
+            <input
+              className="border p-2 mr-2"
+              placeholder="Department Name"
+              value={departmentForm.name}
+              onChange={(e) =>
+                setDepartmentForm({ ...departmentForm, name: e.target.value })
+              }
+            />
+            <button
+              onClick={addDepartment}
+              className="bg-pink-600 text-white px-4 py-2 rounded"
+            >
+              Add Department
+            </button>
+          </div>
+
+          {/* List of Departments */}
           {departments.map((dept, deptIndex) => (
             <div key={dept.id ?? deptIndex} className="border mt-4 p-2">
-              <h3 className="font-bold">{dept.name}</h3>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-bold">{dept.name}</h3>
+                <button
+                  onClick={() => openEdit("department", dept)}
+                  className="text-blue-600 hover:underline"
+                >
+                  Edit Department
+                </button>
+                <button
+                  onClick={() => deleteDepartment(dept.id)}
+                  className="text-red-600 hover:underline"
+                >
+                  Delete
+                </button>
+              </div>
 
-              <div className="mt-2">
+              {/* Add Department Member */}
+              <div className="flex items-center mt-2">
                 <input
                   className="border p-2 mr-2"
                   placeholder="Name"
-                  value={/* deptMemberForm usage preserved earlier */ ""}
-                  readOnly
+                  value={deptMemberForm.name}
+                  onChange={(e) =>
+                    setDeptMemberForm({
+                      ...deptMemberForm,
+                      name: e.target.value,
+                    })
+                  }
                 />
                 <input
                   className="border p-2 mr-2"
                   placeholder="Position"
-                  value={""}
-                  readOnly
+                  value={deptMemberForm.position}
+                  onChange={(e) =>
+                    setDeptMemberForm({
+                      ...deptMemberForm,
+                      position: e.target.value,
+                    })
+                  }
                 />
                 <input
                   className="border p-2 mr-2"
                   placeholder="Phone"
-                  value={""}
-                  readOnly
+                  value={deptMemberForm.phone}
+                  onChange={(e) =>
+                    setDeptMemberForm({
+                      ...deptMemberForm,
+                      phone: e.target.value,
+                    })
+                  }
                 />
                 <button
-                  onClick={() => {
-                    /* kept local addDeptMember for now */ alert(
-                      "Use department edit to manage members (future)."
-                    );
-                  }}
+                  onClick={() => addDeptMember(dept.id, deptIndex)}
                   className="bg-pink-600 text-white px-4 py-2 rounded"
                 >
                   Add Member
                 </button>
               </div>
 
+              {/* Department Members List */}
               <ul className="mt-2">
-                {(dept.members || []).map((m, i) => (
+                {(dept.members || []).map((m, memberIndex) => (
                   <li
-                    key={i}
+                    key={`${dept.id}-${m.id ?? memberIndex}`}
                     className="flex justify-between items-center border-b py-1"
                   >
                     {m.name} - {m.position} - {m.phone}
-                    <button
-                      onClick={() => deleteDeptMember(deptIndex, i)}
-                      className="text-red-500"
-                    >
-                      Delete
-                    </button>
+                    <div>
+                      <button
+                        onClick={() => openEdit("member", m)}
+                        className="text-blue-600 hover:underline mr-2"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() =>
+                          deleteDeptMember(dept.id, m.id, deptIndex)
+                        }
+                        className="text-red-500"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
 
-              {/* Department-level export buttons (downloads department's members) */}
+              {/* Department-level export buttons */}
               <div className="mt-2">
                 <button
                   onClick={() => {
@@ -1713,10 +1791,9 @@ export default function Adults() {
           <div className="bg-white p-6 rounded-lg w-full max-w-xl">
             <h3 className="text-lg font-bold mb-4">Edit {editType}</h3>
 
-            {/* Render a simple dynamic form based on editType */}
+            {/* Dynamic form */}
             <div className="flex flex-col gap-3">
               {Object.keys(editItem).map((k) => {
-                // skip internal fields
                 if (["id", "created_at", "createdBy", "creator"].includes(k))
                   return null;
                 const value = editItem[k] ?? "";
