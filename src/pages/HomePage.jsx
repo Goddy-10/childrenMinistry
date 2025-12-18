@@ -7,6 +7,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
+
+const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+
 export default function HomePage() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
@@ -20,7 +23,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchFeaturedMedia = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/media/slides", {
+        const res = await fetch(`${API}/api/gallery/featured`, {
           headers: token
             ? { Authorization: `Bearer ${token}` }
             : { "Content-Type": "application/json" },
@@ -98,7 +101,7 @@ export default function HomePage() {
               {mediaItems.map((item, idx) => (
                 <div
                   key={idx}
-                  className={`absolute inset-0 transition-opacity duration-700 ${
+                  className={`absolute inset-0 rounded-x1 overflow-hidden transition-opacity duration-700 ${
                     idx === current ? "opacity-100" : "opacity-0"
                   }`}
                 >
@@ -106,7 +109,7 @@ export default function HomePage() {
                     <img
                       src={item.file_url || item.url}
                       alt={item.description || "Media"}
-                      className="w-full h-full object-cover rounded-xl"
+                      className="w-full h-full object-contain rounded-xl bg-black"
                     />
                   ) : (
                     <video
@@ -116,7 +119,7 @@ export default function HomePage() {
                     />
                   )}
                   {item.description && (
-                    <p className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-lg text-sm">
+                    <p className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-lg text-lg">
                       {item.description}
                     </p>
                   )}

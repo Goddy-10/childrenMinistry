@@ -3,6 +3,9 @@ import { useState } from "react";
 import AddEventModal from "../components/AddEventModal";
 import { useAuth } from "@/context/AuthContext";
 
+
+const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+
 export default function Events() {
   const { user } = useAuth(); // ✅ get logged-in user
   const [events, setEvents] = useState([]); 

@@ -721,10 +721,15 @@ export default function Adults() {
   // Update partner
   const updatePartner = async () => {
     try {
+
+      const payload = {
+        ...editPartnerForm,
+        name: editPartnerForm.partner_name, // 👈 KEY FIX
+      };
       const updated = await commonFetch(`/api/missions/partners/${editingPartnerId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editPartnerForm),
+        body: JSON.stringify(payload),
       });
       const normalized = {
         ...updated,
@@ -847,18 +852,37 @@ export default function Adults() {
       else if (editType === "mission") path = `/api/missions/${editItem.id}`;
       else if (editType === "finance")
         path = `/api/adults/finance/${editItem.id}`;
-      else if (editType === "department")
-        path = `/api/departments/${editItem.id}`;
+      else if (editType === "department") path = `/api/departments/${editItem.id}`;
+      else if (editType === "deptmember")
+        path = `/api/department-members/${editItem.id}`;
+        
       else if (editType === "member") path = `/api/members/${editItem.id}`;
       else if (editType === "newmember")
         path = `/api/new-members/${editItem.id}`;
       else throw new Error("Unknown edit type");
+
+      
 
       const updated = await commonFetch(path, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+
+      if (editType === "deptmember") {
+        setDepartments((prev) =>
+          prev.map((d) => {
+            if (!d.members) return d;
+            return {
+              ...d,
+              members: d.members.map((m) =>
+                m.id === updated.id ? updated : m
+              ),
+            };
+          })
+        );
+      }
 
       // update local state
       if (editType === "project")
@@ -886,6 +910,20 @@ export default function Adults() {
         setNewBelievers((s) =>
           s.map((m) => (m.id === updated.id ? updated : m))
         );
+      
+      if (editType === "deptmember") {
+        setDepartments((prev) =>
+          prev.map((d) => {
+            if (!d.members) return d;
+            return {
+              ...d,
+              members: d.members.map((m) =>
+                m.id === updated.id ? updated : m
+              ),
+            };
+          })
+        );
+      }
 
       closeEdit();
     } catch (err) {
@@ -899,7 +937,7 @@ export default function Adults() {
       <h1 className="text-2xl font-bold text-pink-600 mb-4">Adults Ministry</h1>
 
       {/* Tabs */}
-      <div className="flex space-x-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4 border-b border-gray-300">
         {[
           "membership",
           "believers",
@@ -910,8 +948,10 @@ export default function Adults() {
         ].map((tab) => (
           <button
             key={tab}
-            className={`px-4 py-2 rounded ${
-              activeTab === tab ? "bg-pink-600 text-white" : "bg-gray-200"
+            className={`whitespace-nowrap px-4 py-2 font-medium text-sm rounded-t ${
+              activeTab === tab
+                ? "border-b-2 border-pink-600 text-pink-600 bg-gray-50"
+                : "border-b-2 border-transparent text-gray-700 hover:text-pink-600 hover:border-pink-400"
             }`}
             onClick={() => switchTab(tab)}
           >
@@ -972,43 +1012,116 @@ export default function Adults() {
             Save
           </button>
 
-          {/* Members list */}
-          <ul className="mt-4">
-            {members.map((m, i) => (
-              <li
-                key={m.id ?? i}
-                className="flex justify-between items-center border-b py-1"
-              >
-                <div>
-                  {m.full_name} - {m.phone} - {m.residence || ""}
+          {/* Members table */}
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full border-collapse hidden sm:table">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="text-left p-2 border">#</th>
+                  <th className="text-left p-2 border">Name</th>
+                  <th className="text-left p-2 border">Phone</th>
+                  <th className="text-left p-2 border">Residence</th>
+                  <th className="text-center p-2 border">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {members.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center p-4 text-gray-500">
+                      No members found
+                    </td>
+                  </tr>
+                ) : (
+                  members.map((m, i) => (
+                    <tr key={m.id ?? i} className="hover:bg-gray-50">
+                      <td className="p-2 border">{i + 1}</td>
+                      <td className="p-2 border font-medium">{m.full_name}</td>
+                      <td className="p-2 border">{m.phone}</td>
+                      <td className="p-2 border">{m.residence || "-"}</td>
+                      <td className="p-2 border text-center">
+                        <button
+                          onClick={() => openEdit("member", m)}
+                          className="text-sm text-blue-600 mr-3 hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (!m.id) return alert("Member ID missing");
+                            try {
+                              await commonFetch(`/api/members/${m.id}`, {
+                                method: "DELETE",
+                              });
+                              setMembers((s) =>
+                                s.filter((mem) => mem.id !== m.id)
+                              );
+                            } catch (err) {
+                              alert(`Failed to delete member: ${err.message}`);
+                            }
+                          }}
+                          className="text-sm text-red-600 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+
+            {/* 📱 Mobile cards */}
+            <div className="sm:hidden flex flex-col gap-3">
+              {members.length === 0 ? (
+                <div className="text-center text-gray-500">
+                  No members found
                 </div>
-                <div>
-                  <button
-                    onClick={() => openEdit("member", m)}
-                    className="text-sm mr-2 text-blue-600"
+              ) : (
+                members.map((m, i) => (
+                  <div
+                    key={m.id ?? i}
+                    className="bg-white rounded-lg shadow-sm border p-3 space-y-1"
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!m.id) return alert("Member ID missing");
-                      try {
-                        await commonFetch(`/api/members/${m.id}`, {
-                          method: "DELETE",
-                        });
-                        setMembers((s) => s.filter((mem) => mem.id !== m.id));
-                      } catch (err) {
-                        alert(`Failed to delete member: ${err.message}`);
-                      }
-                    }}
-                    className="text-red-500"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                    <div className="text-sm font-semibold">
+                      {i + 1}. {m.full_name}
+                    </div>
+                    <div className="text-xs text-gray-600">📞 {m.phone}</div>
+                    <div className="text-xs text-gray-600">
+                      📍 {m.residence || "-"}
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={() => openEdit("member", m)}
+                        className="text-sm text-blue-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!m.id) return alert("Member ID missing");
+                          try {
+                            await commonFetch(`/api/members/${m.id}`, {
+                              method: "DELETE",
+                            });
+                            setMembers((s) =>
+                              s.filter((mem) => mem.id !== m.id)
+                            );
+                          } catch (err) {
+                            alert(`Failed to delete member: ${err.message}`);
+                          }
+                        }}
+                        className="text-sm text-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
 
           {/* Download / Print */}
           <div className="mt-2">
@@ -1099,43 +1212,104 @@ export default function Adults() {
             Save
           </button>
 
-          {/* List of new believers */}
-          <ul className="mt-4">
-            {newBelievers.map((m, i) => (
-              <li
-                key={m.id ?? i}
-                className="flex justify-between items-center border-b py-1"
-              >
-                <div>
-                  {m.name} - {m.phone} - {m.residence || ""}
+          {/* New Believers Table */}
+          <div className="mt-4 overflow-x-auto">
+            <table className="min-w-full border border-gray-200 divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    Name
+                  </th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    Phone
+                  </th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    Residence
+                  </th>
+                  <th className="px-4 py-2 text-center text-sm font-medium text-gray-700">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {newBelievers.map((m, i) => (
+                  <tr key={m.id ?? i}>
+                    <td className="px-4 py-2">{m.name}</td>
+                    <td className="px-4 py-2">{m.phone}</td>
+                    <td className="px-4 py-2">{m.residence || ""}</td>
+                    <td className="px-4 py-2 text-center">
+                      <button
+                        onClick={() => openEdit("newmember", m)}
+                        className="text-sm mr-2 text-blue-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!m.id) return alert("ID missing");
+                          try {
+                            await commonFetch(`/api/new-members/${m.id}`, {
+                              method: "DELETE",
+                            });
+                            setNewBelievers((s) =>
+                              s.filter((b) => b.id !== m.id)
+                            );
+                          } catch (err) {
+                            alert(`Failed to delete: ${err.message}`);
+                          }
+                        }}
+                        className="text-red-500"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Mobile View */}
+            <div className="mt-2 space-y-2 md:hidden">
+              {newBelievers.map((m, i) => (
+                <div
+                  key={m.id ?? i}
+                  className="border rounded-lg p-2 flex flex-col"
+                >
+                  <div className="font-medium">{m.name}</div>
+                  <div className="text-sm text-gray-600">{m.phone}</div>
+                  {m.residence && (
+                    <div className="text-sm text-gray-600">{m.residence}</div>
+                  )}
+                  <div className="mt-2 flex justify-end space-x-2">
+                    <button
+                      onClick={() => openEdit("newmember", m)}
+                      className="text-sm text-blue-600"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!m.id) return alert("ID missing");
+                        try {
+                          await commonFetch(`/api/new-members/${m.id}`, {
+                            method: "DELETE",
+                          });
+                          setNewBelievers((s) =>
+                            s.filter((b) => b.id !== m.id)
+                          );
+                        } catch (err) {
+                          alert(`Failed to delete: ${err.message}`);
+                        }
+                      }}
+                      className="text-sm text-red-500"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <button
-                    onClick={() => openEdit("newmember", m)}
-                    className="text-sm mr-2 text-blue-600"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!m.id) return alert("ID missing");
-                      try {
-                        await commonFetch(`/api/new-members/${m.id}`, {
-                          method: "DELETE",
-                        });
-                        setNewBelievers((s) => s.filter((b) => b.id !== m.id));
-                      } catch (err) {
-                        alert(`Failed to delete: ${err.message}`);
-                      }
-                    }}
-                    className="text-red-500"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+              ))}
+            </div>
+          </div>
 
           {/* Download / Print */}
           <div className="mt-2">
@@ -1307,31 +1481,56 @@ export default function Adults() {
           >
             Save
           </button>
-
-          <ul className="mt-4">
-            {projects.map((p, i) => (
-              <li
-                key={p.id ?? i}
-                className="flex justify-between items-center border-b py-1"
-              >
-                {p.title} - {p.status} - {p.end_date || p.deadline}
-                <div>
-                  <button
-                    onClick={() => openEdit("project", p)}
-                    className="text-sm mr-2 text-blue-600"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => deleteProject(p.id ?? i)}
-                    className="text-red-500"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {/* Projects Table */}
+          <div className="overflow-x-auto mt-4">
+            <table className="min-w-full border border-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="text-left px-4 py-2 border-b">Title</th>
+                  <th className="text-left px-4 py-2 border-b">Status</th>
+                  <th className="text-left px-4 py-2 border-b">
+                    Deadline / End Date
+                  </th>
+                  <th className="px-4 py-2 border-b">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projects.map((p, i) => (
+                  <tr key={p.id ?? i} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border-b">{p.title}</td>
+                    <td className="px-4 py-2 border-b">
+                      <span
+                        className={`px-2 py-1 rounded text-white text-sm ${
+                          p.status.toLowerCase() === "ongoing"
+                            ? "bg-green-500"
+                            : "bg-gray-500"
+                        }`}
+                      >
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 border-b">
+                      {p.end_date || p.deadline}
+                    </td>
+                    <td className="px-4 py-2 border-b flex gap-2 justify-center">
+                      <button
+                        onClick={() => openEdit("project", p)}
+                        className="text-blue-600 text-sm hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteProject(p.id ?? i)}
+                        className="text-red-500 text-sm hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -1339,7 +1538,7 @@ export default function Adults() {
       {activeTab === "missions" && (
         <div className="mt-6">
           {/* ----------------- ADD MISSION FORM ----------------- */}
-          <div className="flex gap-3 mb-4 bg-white p-4 rounded-lg shadow">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4 bg-white p-4 rounded-lg shadow">
             <input
               type="text"
               placeholder="Mission title"
@@ -1347,7 +1546,7 @@ export default function Adults() {
               onChange={(e) =>
                 setMissionForm({ ...missionForm, title: e.target.value })
               }
-              className="px-3 py-2 border rounded flex-1"
+              className="px-3 py-2 border rounded flex-1 w-full"
             />
             <input
               type="date"
@@ -1355,7 +1554,7 @@ export default function Adults() {
               onChange={(e) =>
                 setMissionForm({ ...missionForm, date: e.target.value })
               }
-              className="px-3 py-2 border rounded"
+              className="px-3 py-2 border rounded w-full sm:w-auto"
             />
             <input
               type="text"
@@ -1364,7 +1563,7 @@ export default function Adults() {
               onChange={(e) =>
                 setMissionForm({ ...missionForm, location: e.target.value })
               }
-              className="px-3 py-2 border rounded flex-1"
+              className="px-3 py-2 border rounded flex-1 w-full"
             />
             <input
               type="number"
@@ -1373,11 +1572,11 @@ export default function Adults() {
               onChange={(e) =>
                 setMissionForm({ ...missionForm, souls_won: e.target.value })
               }
-              className="px-3 py-2 border rounded w-24"
+              className="px-3 py-2 border rounded w-full sm:w-24"
             />
             <button
               onClick={addMission}
-              className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
+              className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700 w-full sm:w-auto"
             >
               Add Mission
             </button>
@@ -1435,12 +1634,16 @@ export default function Adults() {
                         >
                           Edit
                         </button>
+                        <br />
+                        <br />
                         <button
                           onClick={() => deleteMission(m.id)}
                           className="text-red-600 hover:underline"
                         >
                           Delete
                         </button>
+                        <br />
+                        <br />
                         <button
                           onClick={() => {
                             setSelectedMissionId(m.id);
@@ -1672,7 +1875,7 @@ export default function Adults() {
               </div>
 
               {/* Add Department Member */}
-              <div className="flex items-center mt-2">
+              <div className="flex flex-col sm:flex-row sm: items-center gap-2 mt-2">
                 <input
                   className="border p-2 mr-2"
                   placeholder="Name"
@@ -1714,34 +1917,47 @@ export default function Adults() {
                 </button>
               </div>
 
-              {/* Department Members List */}
-              <ul className="mt-2">
-                {(dept.members || []).map((m, memberIndex) => (
-                  <li
-                    key={`${dept.id}-${m.id ?? memberIndex}`}
-                    className="flex justify-between items-center border-b py-1"
-                  >
-                    {m.name} - {m.position} - {m.phone}
-                    <div>
-                      <button
-                        onClick={() => openEdit("member", m)}
-                        className="text-blue-600 hover:underline mr-2"
+              {/* Department Members Table */}
+              <div className="overflow-x-auto mt-2">
+                <table className="min-w-full border border-gray-200">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="text-left px-4 py-2 border-b">Name</th>
+                      <th className="text-left px-4 py-2 border-b">Position</th>
+                      <th className="text-left px-4 py-2 border-b">Phone</th>
+                      <th className="text-left px-4 py-2 border-b">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(dept.members || []).map((m, memberIndex) => (
+                      <tr
+                        key={`${dept.id}-${m.id ?? memberIndex}`}
+                        className="hover:bg-gray-50"
                       >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() =>
-                          deleteDeptMember(dept.id, m.id, deptIndex)
-                        }
-                        className="text-red-500"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-
+                        <td className="px-4 py-2 border-b">{m.name}</td>
+                        <td className="px-4 py-2 border-b">{m.position}</td>
+                        <td className="px-4 py-2 border-b">{m.phone}</td>
+                        <td className="px-4 py-2 border-b flex gap-2">
+                          <button
+                            onClick={() => openEdit("deptmember", m)}
+                            className="text-blue-600 hover:underline"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() =>
+                              deleteDeptMember(dept.id, m.id, deptIndex)
+                            }
+                            className="text-red-500"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               {/* Department-level export buttons */}
               <div className="mt-2">
                 <button

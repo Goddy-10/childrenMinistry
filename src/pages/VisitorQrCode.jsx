@@ -13,6 +13,8 @@ export default function VisitorManagement() {
   const [message, setMessage] = useState(null);
   const containerRef = useRef(null);
 
+  const token = localStorage.getItem("token");
+
   // Fetch visitors from backend
   const fetchVisitors = async () => {
     try {
@@ -36,7 +38,7 @@ export default function VisitorManagement() {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
-    const token = localStorage.getItem("jwt");
+    const token = localStorage.getItem("token");
 
     try {
       const res = await fetch(`${API}/api/visitors`, {
@@ -64,7 +66,7 @@ export default function VisitorManagement() {
     const updatedVisitors = visitors.map(v => v.id === id ? { ...v, followedUp: !v.followedUp } : v);
     setVisitors(updatedVisitors);
 
-    const token=localStorage.getItem("jwt")
+    
 
     const visitor = updatedVisitors.find(v => v.id === id);
     try {
@@ -81,7 +83,7 @@ export default function VisitorManagement() {
   // Delete visitor
   const deleteVisitor = async (id) => {
 
-    const token = localStorage.getItem("jwt");
+    
     try {
       await fetch(`${API}/api/visitors/${id}`, {
         method: "DELETE",
@@ -99,7 +101,7 @@ export default function VisitorManagement() {
   // Clear all followed visitors
   const clearFollowed = async () => {
     const followedIds = visitors.filter((v) => v.followedUp).map((v) => v.id);
-    const token = localStorage.getItem("jwt"); // get token
+    
 
     try {
       for (const id of followedIds) {

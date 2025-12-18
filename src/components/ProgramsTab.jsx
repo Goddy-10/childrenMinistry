@@ -541,7 +541,7 @@ export default function ProgramsTab() {
         ) : materials.length === 0 ? (
           <div className="text-gray-500">No materials yet</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
             {materials.map((m) => (
               <div key={m.id} className="bg-white p-4 rounded-lg shadow">
                 <div className="flex items-start gap-3">
@@ -576,28 +576,28 @@ export default function ProgramsTab() {
 
                 <div className="mt-4 flex gap-2">
                   <button
-                    className="bg-gray-100 px-3 py-1 rounded"
+                    className="bg-gray-100 px-1 py-1 rounded"
                     onClick={() => startEditMaterial(m)}
                   >
                     Edit
                   </button>
                   <button
-                    className="bg-red-50 text-red-600 px-3 py-1 rounded"
+                    className="bg-red-50 text-red-600 px-1 py-1 rounded"
                     onClick={() => deleteMaterial(m.id)}
                   >
                     Delete
                   </button>
                   <button
-                    className="bg-white border px-3 py-1 rounded"
+                    className="bg-white border px-1 py-1 rounded"
                     onClick={() => downloadDocx(m)}
                   >
-                    Download DOCX
+                    Download Dox
                   </button>
                   <button
-                    className="bg-white border px-3 py-1 rounded"
+                    className="bg-white border px-1 py-1 rounded"
                     onClick={() => downloadPdf(m)}
                   >
-                    Download PDF
+                    Download Pdf
                   </button>
                 </div>
               </div>
