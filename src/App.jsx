@@ -13,6 +13,7 @@ import Reports from "./pages/Reports";
 import Timetable from "./pages/Timetable";
 import Adults from "./pages/Adults";
 import ChildrenMinistry from "./pages/ChildrenMinistry";
+import VisitorForm from "./pages/VisitorForm";
 import VisitorQRCode from "./pages/VisitorQrCode";
 
 import Gallery from "./pages/Gallery";
@@ -31,6 +32,7 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             {/* Public routes */}
+            <Route path="/visitor-form" element={<VisitorForm />} />
 
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
@@ -55,7 +57,7 @@ export default function App() {
               path="/change-password"
               element={
                 <ProtectedRoute allowedRoles={["admin", "teacher"]}>
-                  <ChangePassword  />
+                  <ChangePassword />
                 </ProtectedRoute>
               }
             />
@@ -69,7 +71,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/events" element={<Events />} />
 

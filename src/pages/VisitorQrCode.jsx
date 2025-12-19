@@ -130,6 +130,9 @@ export default function VisitorManagement() {
 
   const visitorFormUrl = `${window.location.origin}/visitor-form`;
 
+//TESTING QR CODE LAN IP
+  // const visitorFormUrl = `http://10.121.183.239:5173/visitor-form`;
+
   // QR Code utilities
   const downloadQR = () => {
     const canvas = containerRef.current?.querySelector("canvas");
@@ -174,7 +177,7 @@ export default function VisitorManagement() {
             <input name="name" value={form.name} onChange={handleChange} placeholder="Full Name" required className="w-full border p-2 rounded" />
             <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" required className="w-full border p-2 rounded" />
             <input name="residence" value={form.residence} onChange={handleChange} placeholder="Residence" className="w-full border p-2 rounded" />
-            <textarea name="prayer_request" value={form.prayer_request} onChange={handleChange} placeholder="Prayer Request (optional)" className="w-full border p-2 rounded" />
+            <textarea name="prayer_request" value={form.prayer_request} onChange={handleChange} placeholder="Prayer Request or Feedback (optional)" className="w-full border p-2 rounded" />
             <div className="flex gap-3">
               <button type="submit" disabled={loading} className="bg-pink-600 text-white px-4 py-2 rounded">{loading ? "Saving..." : "Submit"}</button>
               <button type="button" onClick={()=>setForm({ name:"", phone:"", residence:"", prayer_request:"" })} className="bg-gray-200 px-4 py-2 rounded">Clear</button>
