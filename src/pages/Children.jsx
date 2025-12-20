@@ -31,7 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Document, Packer, Paragraph, Table, TableCell, TableRow } from "docx";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
-const API = "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 // Hardcoded class options
 const CLASS_OPTIONS = [
