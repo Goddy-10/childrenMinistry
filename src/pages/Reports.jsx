@@ -24,7 +24,7 @@ import { Document, Packer, Paragraph, Table, TableCell, TableRow,TextRun } from 
 
 
 
-const API = "http://localhost:5000"; // backend API
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const CLASS_TABS = [
   { id: "gifted", label: "Gifted Brains (0–3)" },
