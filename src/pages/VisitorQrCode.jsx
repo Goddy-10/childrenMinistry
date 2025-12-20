@@ -125,10 +125,13 @@ export default function VisitorManagement() {
 
 
 
+const visitorFormUrl = import.meta.env.VITE_VISITOR_FORM_URL;
+  
+  //Local Dev
+  // VITE_VISITOR_FORM_URL=http://localhost:5173/visitor-form
 
   
-
-  const visitorFormUrl = `${window.location.origin}/visitor-form`;
+  // const visitorFormUrl = `${window.location.origin}/visitor-form`;
 
 //TESTING QR CODE LAN IP
   // const visitorFormUrl = `http://10.121.183.239:5173/visitor-form`;
