@@ -122,7 +122,7 @@ export default function VisitorManagement() {
 
 
 
-const visitorFormUrl = "https://children-ministry.vercel.app/#/visitor-form";
+const visitorFormUrl = "https://children-ministry.vercel.app/visitor-form";
 
 
 // const visitorFormUrl = import.meta.env.VITE_VISITOR_FORM_URL;
