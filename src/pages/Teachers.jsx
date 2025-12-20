@@ -157,7 +157,7 @@ export default function Teachers() {
     if (!window.confirm("Are you sure you want to delete this teacher?")) return;
 
     try {
-      const res = await fetch(`${API_TEACHERS}${id}`, {
+      const res = await fetch(`${API_TEACHERS}/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
