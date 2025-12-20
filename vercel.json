@@ -1,0 +1,3 @@
+{
+  "rewrites": [{ "source": "/visitor-form", "destination": "/" }]
+}

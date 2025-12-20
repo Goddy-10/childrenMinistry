@@ -122,15 +122,15 @@ export default function VisitorManagement() {
 
 
 
+const visitorFormUrl = "https://children-ministry.vercel.app/#/visitor-form";
 
 
-
-const visitorFormUrl = import.meta.env.VITE_VISITOR_FORM_URL;
+// const visitorFormUrl = import.meta.env.VITE_VISITOR_FORM_URL;
   
   //Local Dev
   // VITE_VISITOR_FORM_URL=http://localhost:5173/visitor-form
 
-  
+
   // const visitorFormUrl = `${window.location.origin}/visitor-form`;
 
 //TESTING QR CODE LAN IP
