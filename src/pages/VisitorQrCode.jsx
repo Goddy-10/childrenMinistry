@@ -196,7 +196,7 @@ export default function VisitorManagement() {
                 <th className="border p-2">Name</th>
                 <th className="border p-2">Phone</th>
                 <th className="border p-2">Residence</th>
-                <th className="border p-2">Prayer Request</th>
+                <th className="border p-2">Prayer Request/Feedback</th>
                 <th className="border p-2">Actions</th>
               </tr>
             </thead>

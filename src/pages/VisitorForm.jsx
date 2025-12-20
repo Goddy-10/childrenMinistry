@@ -9,14 +9,27 @@ export default function VisitorForm() {
     residence: "",
     prayer_request: "",
   });
+
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  const handleChange = (e) =>
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // ✅ Friendly validation (before hitting backend)
+    if (!form.name.trim()) {
+      setMessage({
+        type: "error",
+        text: "Please fill out your name before submitting.",
+      });
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
 
@@ -27,22 +40,43 @@ export default function VisitorForm() {
         body: JSON.stringify(form),
       });
 
-      // if (!res.ok) throw new Error(`Server returned ${res.status}`);
-      const text = await res.text();
-      console.error("RAW RESPONSE:", res.status, text);
-
       if (!res.ok) {
-        throw new Error(text || `Server returned ${res.status}`);
+        throw new Error("Server error");
       }
-      console.log("Submitting visitor:", form);
-      setMessage({ type: "success", text: "Visitor saved successfully!" });
-      setForm({ name: "", phone: "", residence: "", prayer_request: "" });
+
+      // ✅ Success
+      setSubmitted(true);
+      setForm({
+        name: "",
+        phone: "",
+        residence: "",
+        prayer_request: "",
+      });
     } catch (err) {
-      setMessage({ type: "error", text: "Failed to save visitor." });
+      setMessage({
+        type: "error",
+        text: "Something went wrong. Please try again.",
+      });
     } finally {
       setLoading(false);
     }
   };
+
+  // ✅ THANK YOU SCREEN
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+        <div className="bg-white p-6 rounded-2xl shadow w-full max-w-md text-center">
+          <h2 className="text-2xl font-bold text-pink-600 mb-4">Thank You!</h2>
+          <p className="text-gray-700 leading-relaxed">
+            Thank you for your feedback. <br />
+            We love visitors. <br />
+            God bless you and welcome again.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
@@ -50,6 +84,7 @@ export default function VisitorForm() {
         <h2 className="text-2xl font-bold text-pink-600 mb-4">
           Register as Visitor
         </h2>
+
         {message && (
           <div
             className={`p-3 rounded mb-4 ${
@@ -61,23 +96,24 @@ export default function VisitorForm() {
             {message.text}
           </div>
         )}
+
         <form className="space-y-4" onSubmit={handleSubmit}>
           <input
             name="name"
             value={form.name}
             onChange={handleChange}
-            placeholder="Full Name"
-            required
+            placeholder="Full Name *"
             className="w-full border p-2 rounded"
           />
+
           <input
             name="phone"
             value={form.phone}
             onChange={handleChange}
             placeholder="Phone"
-            required
             className="w-full border p-2 rounded"
           />
+
           <input
             name="residence"
             value={form.residence}
@@ -85,17 +121,18 @@ export default function VisitorForm() {
             placeholder="Residence"
             className="w-full border p-2 rounded"
           />
+
           <textarea
             name="prayer_request"
-            value={form.prayer_request_or_Feedback}
+            value={form.prayer_request}
             onChange={handleChange}
             placeholder="Prayer Request or Feedback (optional)"
             className="w-full border p-2 rounded"
           />
+
           <button
             type="submit"
             disabled={loading}
-            onClick={handleSubmit}
             className="bg-pink-600 text-white px-4 py-2 rounded w-full"
           >
             {loading ? "Submitting..." : "Submit"}
