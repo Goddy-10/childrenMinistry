@@ -1054,7 +1054,7 @@ export default function Adults() {
                                 method: "DELETE",
                               });
                               setMembers((s) =>
-                                s.filter((mem) => mem.id !== m.id)
+                                s.filter((mem) => mem.id !== m.id),
                               );
                             } catch (err) {
                               alert(`Failed to delete member: ${err.message}`);
@@ -1106,7 +1106,7 @@ export default function Adults() {
                               method: "DELETE",
                             });
                             setMembers((s) =>
-                              s.filter((mem) => mem.id !== m.id)
+                              s.filter((mem) => mem.id !== m.id),
                             );
                           } catch (err) {
                             alert(`Failed to delete member: ${err.message}`);
@@ -1136,7 +1136,7 @@ export default function Adults() {
                   "members.doc",
                   "Members",
                   ["Name", "Phone", "Residence"],
-                  rows
+                  rows,
                 );
               }}
               className="bg-pink-600 text-white px-3 py-1 rounded mr-2"
@@ -1252,7 +1252,7 @@ export default function Adults() {
                               method: "DELETE",
                             });
                             setNewBelievers((s) =>
-                              s.filter((b) => b.id !== m.id)
+                              s.filter((b) => b.id !== m.id),
                             );
                           } catch (err) {
                             alert(`Failed to delete: ${err.message}`);
@@ -1295,7 +1295,7 @@ export default function Adults() {
                             method: "DELETE",
                           });
                           setNewBelievers((s) =>
-                            s.filter((b) => b.id !== m.id)
+                            s.filter((b) => b.id !== m.id),
                           );
                         } catch (err) {
                           alert(`Failed to delete: ${err.message}`);
@@ -1324,7 +1324,7 @@ export default function Adults() {
                   "new_believers.doc",
                   "New Believers",
                   ["Name", "Phone", "Residence"],
-                  rows
+                  rows,
                 );
               }}
               className="bg-pink-600 text-white px-3 py-1 rounded mr-2"
@@ -1342,7 +1342,7 @@ export default function Adults() {
                 printRows(
                   "New Believers",
                   ["Name", "Phone", "Residence"],
-                  rows
+                  rows,
                 );
               }}
               className="bg-gray-500 text-white px-3 py-1 rounded"
@@ -1583,7 +1583,83 @@ export default function Adults() {
           </div>
 
           {/* ----------------- MISSIONS TABLE ----------------- */}
+
           <div className="overflow-x-auto bg-white shadow rounded-lg">
+            <table className="min-w-full border border-gray-300 text-sm">
+              <thead className="bg-pink-600 text-white">
+                <tr>
+                  <th className="border px-2 py-2 text-left">Date</th>
+                  <th className="border px-2 py-2 text-left">Activity</th>
+                  <th className="border px-2 py-2 text-left hidden sm:table-cell">
+                    Location
+                  </th>
+                  <th className="border px-2 py-2 text-center">Souls</th>
+                  <th className="border px-2 py-2 text-center">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {missions.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="text-center text-gray-500 py-4 text-sm"
+                    >
+                      No mission records found
+                    </td>
+                  </tr>
+                ) : (
+                  missions.map((m) => (
+                    <tr key={m.id} className="hover:bg-gray-100">
+                      <td className="border px-2 py-2">{m.date || "—"}</td>
+
+                      <td className="border px-2 py-2 font-medium">
+                        {m.title}
+                      </td>
+
+                      {/* Hide location on very small screens */}
+                      <td className="border px-2 py-2 hidden sm:table-cell">
+                        {m.location || "—"}
+                      </td>
+
+                      <td className="border px-2 py-2 text-center">
+                        {m.souls_won || "—"}
+                      </td>
+
+                      <td className="border px-2 py-2 text-center">
+                        <div className="flex flex-col gap-1 items-center text-xs">
+                          <button
+                            onClick={() => openEditMissionModal(m)}
+                            className="text-blue-600 hover:underline"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            onClick={() => deleteMission(m.id)}
+                            className="text-red-600 hover:underline"
+                          >
+                            Delete
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setSelectedMissionId(m.id);
+                              fetchPartners(m.id);
+                            }}
+                            className="text-purple-600 hover:underline"
+                          >
+                            view partners
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          {/* <div className="overflow-x-auto bg-white shadow rounded-lg">
             <table className="min-w-full border-collapse border border-gray-300">
               <thead className="bg-pink-600 text-white">
                 <tr>
@@ -1658,27 +1734,25 @@ export default function Adults() {
                   ))
                 )}
               </tbody>
-            </table>
+            </table> */}
 
-            {isEditOpen && editType === "mission" && editItem && (
-              <MissionEditModal
-                editItem={editItem}
-                setEditItem={setEditItem}
-                saveEdit={saveEdit}
-                closeEdit={closeEdit}
-              />
-            )}
-          </div>
+          {isEditOpen && editType === "mission" && editItem && (
+            <MissionEditModal
+              editItem={editItem}
+              setEditItem={setEditItem}
+              saveEdit={saveEdit}
+              closeEdit={closeEdit}
+            />
+          )}
         </div>
       )}
 
       {/* ======================= PARTNERS CHILD TABLE ======================= */}
       {selectedMissionId && (
         <div className="mt-6 bg-white shadow rounded-lg p-4">
-          <h3 className="text-xl font-bold mb-4">Partners for this Mission</h3>
-
+          <h3 className="text-l font-bold mb-4">Partners for this Mission</h3>
           {/* Add Partner Form */}
-          <div className="flex gap-3 mb-4">
+          <div className="flex flex-col md:flex-row gap-3 mb-4">
             <input
               type="text"
               placeholder="Partner Name"
@@ -1686,7 +1760,7 @@ export default function Adults() {
               onChange={(e) =>
                 setPartnerForm({ ...partnerForm, partner_name: e.target.value })
               }
-              className="border px-3 py-2 rounded w-1/3"
+              className="border px-3 py-2 rounded w-full md:w-1/3"
             />
             <input
               type="text"
@@ -1695,7 +1769,7 @@ export default function Adults() {
               onChange={(e) =>
                 setPartnerForm({ ...partnerForm, support: e.target.value })
               }
-              className="border px-3 py-2 rounded w-1/3"
+              className="border px-3 py-2 rounded w-full md:w-1/3"
             />
             <input
               type="text"
@@ -1704,18 +1778,16 @@ export default function Adults() {
               onChange={(e) =>
                 setPartnerForm({ ...partnerForm, contact: e.target.value })
               }
-              className="border px-3 py-2 rounded w-1/3"
+              className="border px-3 py-2 rounded w-full md:w-1/3"
             />
             <button
               onClick={addPartner}
-              className="bg-pink-600 text-white px-5 py-2 rounded hover:bg-pink-700"
+              className="bg-pink-600 text-white px-5 py-2 rounded hover:bg-pink-700 w-full md:w-auto"
             >
               + Add Partner
             </button>
           </div>
-
-          {/* Partners Table */}
-          <table className="min-w-full border-collapse border border-gray-300">
+          {/* <table className="min-w-full border-collapse border border-gray-300">
             <thead className="bg-gray-200">
               <tr>
                 <th className="border px-4 py-2 text-left">Partner</th>
@@ -1828,7 +1900,149 @@ export default function Adults() {
                 ))
               )}
             </tbody>
-          </table>
+          </table> */}
+          \{/* Partners Table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300 text-sm md:text-base">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="border px-2 py-1 md:px-4 md:py-2 text-left">
+                    Partner
+                  </th>
+                  <th className="border px-2 py-1 md:px-4 md:py-2 text-left">
+                    Support
+                  </th>
+                  <th className="border px-2 py-1 md:px-4 md:py-2 text-left">
+                    Contact
+                  </th>
+                  <th className="border px-2 py-1 md:px-4 md:py-2 text-center">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {partners.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="4"
+                      className="text-center text-gray-500 py-3 text-sm"
+                    >
+                      No partners added.
+                    </td>
+                  </tr>
+                ) : (
+                  partners.map((pt) => (
+                    <tr key={pt.id} className="hover:bg-gray-100">
+                      {/* Partner */}
+                      <td className="border px-2 py-1 md:px-4 md:py-2">
+                        {editingPartnerId === pt.id ? (
+                          <input
+                            type="text"
+                            value={editPartnerForm.partner_name}
+                            onChange={(e) =>
+                              setEditPartnerForm((f) => ({
+                                ...f,
+                                partner_name: e.target.value,
+                              }))
+                            }
+                            className="border px-2 py-1 w-full text-sm"
+                          />
+                        ) : (
+                          <span className="text-sm md:text-base">
+                            {pt.partner_name}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Support */}
+                      <td className="border px-2 py-1 md:px-4 md:py-2">
+                        {editingPartnerId === pt.id ? (
+                          <input
+                            type="text"
+                            value={editPartnerForm.support || ""}
+                            onChange={(e) =>
+                              setEditPartnerForm((f) => ({
+                                ...f,
+                                support: e.target.value,
+                              }))
+                            }
+                            className="border px-2 py-1 w-full text-sm"
+                          />
+                        ) : (
+                          <span className="text-sm md:text-base">
+                            {pt.support || "—"}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Contact */}
+                      <td className="border px-2 py-1 md:px-4 md:py-2">
+                        {editingPartnerId === pt.id ? (
+                          <input
+                            type="text"
+                            value={editPartnerForm.contact || ""}
+                            onChange={(e) =>
+                              setEditPartnerForm((f) => ({
+                                ...f,
+                                contact: e.target.value,
+                              }))
+                            }
+                            className="border px-2 py-1 w-full text-sm"
+                          />
+                        ) : (
+                          <span className="text-sm md:text-base">
+                            {pt.contact || "—"}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="border px-2 py-1 md:px-4 md:py-2 text-center">
+                        {editingPartnerId === pt.id ? (
+                          <>
+                            <button
+                              onClick={updatePartner}
+                              className="text-green-600 text-xs md:text-sm mr-2"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingPartnerId(null);
+                                setEditPartnerForm({});
+                              }}
+                              className="text-red-600 text-xs md:text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => {
+                                setEditingPartnerId(pt.id);
+                                setEditPartnerForm(pt);
+                              }}
+                              className="text-blue-600 text-xs md:text-sm mr-2"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => deletePartner(pt.id)}
+                              className="text-red-600 text-xs md:text-sm"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -1849,7 +2063,7 @@ export default function Adults() {
             />
             <button
               onClick={addDepartment}
-              className="bg-pink-600 text-white px-4 py-2 rounded"
+              className="bg-pink-600 text-sm text-white px-4 py-1 rounded"
             >
               Add Department
             </button>
@@ -1859,10 +2073,10 @@ export default function Adults() {
           {departments.map((dept, deptIndex) => (
             <div key={dept.id ?? deptIndex} className="border mt-4 p-2">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="font-bold">{dept.name}</h3>
+                <h3 className="text-sm font-bold">{dept.name}</h3>
                 <button
                   onClick={() => openEdit("department", dept)}
-                  className="text-blue-600 hover:underline"
+                  className="text-sm text-blue-600 hover:underline"
                 >
                   Edit Department
                 </button>
@@ -1875,9 +2089,9 @@ export default function Adults() {
               </div>
 
               {/* Add Department Member */}
-              <div className="flex flex-col sm:flex-row sm: items-center gap-2 mt-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
                 <input
-                  className="border p-2 mr-2"
+                  className="border p-2 text-sm rounded w-full sm:w-auto"
                   placeholder="Name"
                   value={deptMemberForm.name}
                   onChange={(e) =>
@@ -1887,8 +2101,9 @@ export default function Adults() {
                     })
                   }
                 />
+
                 <input
-                  className="border p-2 mr-2"
+                  className="border p-2 text-sm rounded w-full sm:w-auto"
                   placeholder="Position"
                   value={deptMemberForm.position}
                   onChange={(e) =>
@@ -1898,8 +2113,9 @@ export default function Adults() {
                     })
                   }
                 />
+
                 <input
-                  className="border p-2 mr-2"
+                  className="border p-2 text-sm rounded w-full sm:w-auto"
                   placeholder="Phone"
                   value={deptMemberForm.phone}
                   onChange={(e) =>
@@ -1909,46 +2125,50 @@ export default function Adults() {
                     })
                   }
                 />
+
                 <button
                   onClick={() => addDeptMember(dept.id, deptIndex)}
-                  className="bg-pink-600 text-white px-4 py-2 rounded"
+                  className="bg-pink-600 text-white px-3 py-2 text-sm rounded w-full sm:w-auto"
                 >
-                  Add Member
+                  Add
                 </button>
               </div>
 
               {/* Department Members Table */}
-              <div className="overflow-x-auto mt-2">
-                <table className="min-w-full border border-gray-200">
-                  <thead className="bg-gray-100">
+              <div className="overflow-x-auto mt-3">
+                <table className="min-w-full border border-gray-200 text-sm">
+                  <thead className="bg-gray-100 text-xs sm:text-sm">
                     <tr>
-                      <th className="text-left px-4 py-2 border-b">Name</th>
-                      <th className="text-left px-4 py-2 border-b">Position</th>
-                      <th className="text-left px-4 py-2 border-b">Phone</th>
-                      <th className="text-left px-4 py-2 border-b">Actions</th>
+                      <th className="text-left px-2 py-2 border-b">Name</th>
+                      <th className="text-left px-2 py-2 border-b">Position</th>
+                      <th className="text-left px-2 py-2 border-b">Phone</th>
+                      <th className="text-left px-2 py-2 border-b">Actions</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {(dept.members || []).map((m, memberIndex) => (
                       <tr
                         key={`${dept.id}-${m.id ?? memberIndex}`}
-                        className="hover:bg-gray-50"
+                        className="hover:bg-gray-50 text-xs sm:text-sm"
                       >
-                        <td className="px-4 py-2 border-b">{m.name}</td>
-                        <td className="px-4 py-2 border-b">{m.position}</td>
-                        <td className="px-4 py-2 border-b">{m.phone}</td>
-                        <td className="px-4 py-2 border-b flex gap-2">
+                        <td className="px-2 py-2 border-b">{m.name}</td>
+                        <td className="px-2 py-2 border-b">{m.position}</td>
+                        <td className="px-2 py-2 border-b">{m.phone}</td>
+
+                        <td className="px-2 py-2 border-b flex gap-2 flex-wrap">
                           <button
                             onClick={() => openEdit("deptmember", m)}
-                            className="text-blue-600 hover:underline"
+                            className="text-blue-600 text-xs sm:text-sm"
                           >
                             Edit
                           </button>
+
                           <button
                             onClick={() =>
                               deleteDeptMember(dept.id, m.id, deptIndex)
                             }
-                            className="text-red-500"
+                            className="text-red-500 text-xs sm:text-sm"
                           >
                             Delete
                           </button>
@@ -1971,7 +2191,7 @@ export default function Adults() {
                       `${dept.name || "department"}_members.doc`,
                       `${dept.name || "Department"} Members`,
                       ["Name", "Position", "Phone"],
-                      rows
+                      rows,
                     );
                   }}
                   className="bg-pink-600 text-white px-3 py-1 rounded mr-2"
@@ -1988,7 +2208,7 @@ export default function Adults() {
                     printRows(
                       `${dept.name || "Department"} Members`,
                       ["Name", "Position", "Phone"],
-                      rows
+                      rows,
                     );
                   }}
                   className="bg-gray-500 text-white px-3 py-1 rounded"

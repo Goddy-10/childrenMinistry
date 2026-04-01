@@ -735,7 +735,7 @@ const fetchAttendanceKpi = async () => {
             <SelectTrigger className="w-56 border-pink-300">
               <SelectValue placeholder="Filter by class" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white z-50 shadow-lg border rounded-md">
               {CLASS_OPTIONS.map((opt) => (
                 <SelectItem key={opt.id} value={opt.id}>
                   {opt.label}
