@@ -15,8 +15,6 @@ export default function Gallery() {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
-  
-
   // Fetch media (photos/videos)
   const fetchMedia = async () => {
     try {
@@ -112,6 +110,32 @@ export default function Gallery() {
   };
 
   // Toggle Featured (add/remove from homepage slideshow)
+
+  // const handleToggleFeatured = async (id) => {
+  //   if (!user || user.role !== "admin") {
+  //     alert("Only admins can feature media.");
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await fetch(`${API}/api/gallery/edit/${id}`, {
+  //       method: "PATCH",
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+
+  //     if (!res.ok) {
+  //       const errData = await res.json();
+  //       throw new Error(errData.error || "Failed to update featured status");
+  //     }
+
+  //     await fetchMedia(); // refresh after toggle
+  //   } catch (err) {
+  //     console.error("Toggle featured error:", err);
+  //     alert(err.message);
+  //   }
+  // };
+
+  // Toggle Featured (add/remove from homepage slideshow)
   const handleToggleFeatured = async (id) => {
     if (!user || user.role !== "admin") {
       alert("Only admins can feature media.");
@@ -129,7 +153,16 @@ export default function Gallery() {
         throw new Error(errData.error || "Failed to update featured status");
       }
 
-      await fetchMedia(); // refresh after toggle
+      const updatedItem = await res.json();
+
+      // Update the local state immediately
+      setMedia(
+        media.map((item) =>
+          item.id === id
+            ? { ...item, is_featured: updatedItem.is_featured }
+            : item,
+        ),
+      );
     } catch (err) {
       console.error("Toggle featured error:", err);
       alert(err.message);

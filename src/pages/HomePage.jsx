@@ -107,13 +107,13 @@ export default function HomePage() {
                 >
                   {item.media_type === "image" ? (
                     <img
-                      src={item.file_url || item.url}
+                      src={item.url}
                       alt={item.description || "Media"}
                       className="w-full h-full object-contain rounded-xl bg-black"
                     />
                   ) : (
                     <video
-                      src={item.file_url || item.url}
+                      src={item.url}
                       controls
                       className="w-full h-full object-cover rounded-xl"
                     />
