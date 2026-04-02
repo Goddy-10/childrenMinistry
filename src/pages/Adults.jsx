@@ -1,6 +1,7 @@
 
 // src/pages/Adults.jsx
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import FinanceSummary from "../components/FinanceSummary";
 import { useAuth } from "@/context/AuthContext"; // << CHANGED: use auth token
 import FinanceDashboard from "../components/FinanceSummary";
@@ -966,6 +967,14 @@ export default function Adults() {
       {activeTab === "membership" && (
         <div>
           <h2 className="text-lg font-semibold mb-2">Membership</h2>
+          <div>
+            <Link
+              to="/membership-qr"
+              className="px-4 py-2 bg-pink-600 text-sm text-white rounded"
+            >
+              🔗 Membership QR Code
+            </Link>
+          </div>
 
           {/* Form to add member */}
           <input

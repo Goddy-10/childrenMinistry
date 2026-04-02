@@ -23,6 +23,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ChangePassword from "./pages/ChangePassword";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import Membership from "./pages/Membership";
+import MembershipQR from "./pages/MembershipQR";
+
+
 
 export default function App() {
   return (
@@ -72,8 +76,11 @@ export default function App() {
               }
             />
 
+
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/membership" element={<Membership />} />
+            <Route path="/membership-qr" element={<MembershipQR />} />
 
             {/* 🔒 Children Ministry restricted to admin & teacher */}
             <Route
