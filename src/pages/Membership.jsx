@@ -254,7 +254,7 @@ export default function Membership() {
 
         {/* Church Info */}
         <div className="mt-8 text-center text-gray-600 text-xs">
-          <p>GCC - Growing in Christ Church</p>
+          <p>GCC - Grace Cellebration Chapel</p>
           <p className="text-pink-600 font-semibold mt-1">Raising Standards</p>
         </div>
       </div>
