@@ -505,22 +505,22 @@ export default function Events() {
                           media.mimetype?.startsWith("image/") ? (
                             <img
                               key={i}
-                              src={media.url}
+                              src={`${API}${ media.url }`}
                               alt={media.filename}
                               className="w-full h-20 sm:h-24 lg:h-32 object-cover rounded-lg shadow hover:shadow-lg transition cursor-pointer"
-                              onClick={() => window.open(media.url, "_blank")}
+                              onClick={() => window.open(`${API}${media.url}`, "_blank")}
                             />
                           ) : media.mimetype?.startsWith("video/") ? (
                             <video
                               key={i}
-                              src={media.url}
+                              src={`${API}${media.url}`}
                               controls
                               className="w-full h-20 sm:h-24 lg:h-32 rounded-lg shadow object-cover"
                             />
                           ) : (
                             <a
                               key={i}
-                              href={media.url}
+                              href={`${API}${media.url}`}
                               download={media.filename}
                               className="flex items-center justify-center bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition p-2 text-xs sm:text-sm"
                               title={media.filename}
